@@ -10,7 +10,7 @@ td input {
 	width: 35px;
 	height: 35px;
 	text-align: right;
-	font-weight: bold;
+	font-weight: bolder;
 	font-style: italic;
 }
 
@@ -29,11 +29,6 @@ table {
 
 .big-border-right {
 	border-right: 2px solid black;
-}
-
-.pre-chosen-numbers {
-	font-style: italic;
-	font-weight: bold;
 }
 
 #buttonSolve {
