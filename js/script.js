@@ -1,12 +1,23 @@
 /* Functions */
+// Change the button state from disabled to enabled depending on if the table is empty or not
 function changeButtonState() {
-	; // to be added
+	var flag = true;
+
+	$('table tbody td input').each(function() {
+		if ($(this).val() != '') {
+			$('#buttonSolve button').removeClass('pure-button-disabled');
+			flag = false;
+
+			return false; // break from loop
+		}
+	});
+
+	if (flag) // flag not toggled, the entire table is empty
+		$('#buttonSolve button').addClass('pure-button-disabled');
 }
 
 $(function() {
 	/* Global variables */
-	var buttonState = 'pure-button-disabled';
-
 
 	/* At start */
 	$('table tbody tr td').each(function(index) {
@@ -27,10 +38,10 @@ $(function() {
 			
 			if (key != BACKSPACE && (this.value != '' || (key < ONE || key > NINE)))
 				e.preventDefault();
-
-			changeButtonState();
 		}
 	});
+
+	$('tbody input').on('keyup', changeButtonState);
 
 	// find solution
 	// store it
