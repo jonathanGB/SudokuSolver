@@ -18,14 +18,14 @@ $(function() {
 	});
 
 	/* Events */
-	$('tbody input').on('keydown paste', function(e) {
-		var BACKSPACE = 8, ZERO = 48, NINE = 57;
+	$('tbody input').on('keypress paste', function(e) {
+		var BACKSPACE = 8, ONE = 49, NINE = 57;
 		if (e.type === "paste")
 			e.preventDefault();
 		else {
 			var key = e.keyCode || e.charCode;
 			
-			if (key != BACKSPACE && (this.value != '' || (key < ZERO || key > NINE)))
+			if (key != BACKSPACE && (this.value != '' || (key < ONE || key > NINE)))
 				e.preventDefault();
 
 			changeButtonState();
