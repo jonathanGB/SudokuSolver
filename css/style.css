@@ -6,6 +6,14 @@ td {
 	border: 1px solid;
 }
 
+td input {
+	width: 35px;
+	height: 35px;
+	text-align: right;
+	font-weight: bold;
+	font-style: italic;
+}
+
 table {
 	border-collapse: collapse;
 	width: 300px;
