@@ -35,3 +35,12 @@ table {
 	font-style: italic;
 	font-weight: bold;
 }
+
+#buttonSolve {
+	padding-top: 20px;
+	text-align: center;
+}
+
+button.pure-button {
+	padding-right: 10px;
+}
