@@ -1,0 +1,25 @@
+td {
+	border: 1px solid;
+}
+
+table {
+	border-collapse: collapse;
+	width: 200px;
+	height: 200px;
+	text-align: center;
+	margin: 0 auto;
+	border: 2px solid black;
+}
+
+.big-border-bottom {
+	border-bottom: 2px solid black;
+}
+
+.big-border-right {
+	border-right: 2px solid black;
+}
+
+.pre-chosen-numbers {
+	font-style: italic;
+	font-weight: bold;
+}
