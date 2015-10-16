@@ -1,19 +1,24 @@
 /* Functions */
+
 // Change the button state from disabled to enabled depending on if the table is empty or not
-function changeButtonState() {
-	var flag = true;
-
-	$('table tbody td input').each(function() {
-		if ($(this).val() != '') {
-			$('#buttonSolve button').removeClass('pure-button-disabled');
-			flag = false;
-
-			return false; // break from loop
-		}
-	});
-
-	if (flag) // flag not toggled, the entire table is empty
+function changeButtonState(state) {
+	if (state == "disable") {
 		$('#buttonSolve button').addClass('pure-button-disabled');
+	} else {
+		var flag = true;
+
+		$('table tbody td input').each(function() {
+			if ($(this).val() != '') {
+				$('#buttonSolve button').removeClass('pure-button-disabled');
+				flag = false;
+
+				return false; // break from loop
+			}
+		});
+
+		if (flag) // flag not toggled, the entire table is empty
+			$('#buttonSolve button').addClass('pure-button-disabled');
+	}
 }
 
 function fillMap() {
@@ -85,13 +90,35 @@ function checkSquares() {
 	return true;
 }
 
+function popover(fade) {
+	if (fade == "fadeout")
+		$('div.white-cover, img.center').fadeOut();
+	else
+		$('div.white-cover, img.center').fadeIn();
+}
+
 function validateMap() {
 	return checkRows() && checkColumns() && checkSquares();
 }
 
 function buildMap() {
 	fillMap();
-	validateMap();
+
+	$('#solutionContainer').fadeOut();
+
+	if (validateMap()) {
+		$('div.alert').fadeOut();
+		// popover("fadein")
+		// generate solution
+		// popover("fadeout")
+		// populate solution table
+		// show solution table
+
+	} else {
+		$('div.alert').fadeIn();
+		changeButtonState('disable');
+	}
+
 }
 
 
@@ -110,6 +137,7 @@ $(function() {
 			$(this).addClass('big-border-right');
 	});
 
+
 	/* Events */
 	$('tbody input').on('keypress paste', function(e) {
 		var BACKSPACE = 8, ONE = 49, NINE = 57;
@@ -123,15 +151,17 @@ $(function() {
 		}
 	});
 
-	$('tbody input').on('keyup', changeButtonState);
+	$('tbody input').on('keyup click', changeButtonState);
 
-	$('#buttonSolve button').click(function() {
-		if (!$(this).hasClass('pure-button-disabled')) {
+	$('button#solve').click(function() {
+		if (!$(this).hasClass('pure-button-disabled'))
 			buildMap();
-		}
 	});
 
-	// find solution
-	// store it
-	// let the user play
+	$('button#remove').click(function() {
+		if (!$(this).hasClass('pure-button-disabled')) {
+			$('table#base tbody td input').val('');
+			changeButtonState();
+		}
+	});
 });

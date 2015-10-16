@@ -11,8 +11,15 @@
 	<header class="pure-g">
 		<h1 class="pure-u-5-5">Sudoku Solver</h1>
 	</header>
-
-	<table>
+	
+	<h2>Input the base board: </h2>
+	<div class="alert">
+		<h2>
+			Your base board contains errors! 
+			<i class="fa fa-exclamation-triangle"></i>
+		</h2>
+	</div>
+	<table id="base">
 		<tr>
 			<td><input type="number" min="1" max="9" maxlength="1"></td>
 			<td><input type="number" min="1" max="9" maxlength="1"></td>
@@ -115,113 +122,124 @@
 	</table>
 
 	<div id="buttonSolve" class="">
-		<button class="pure-button pure-button-primary pure-button-disabled">
+		<button id="solve" class="pure-button pure-button-primary pure-button-disabled">
 			Solve Sudoku!
 			<i class="fa fa-cog"></i>
 		</button>
+		<button id="remove" class="pure-button pure-button-error pure-button-disabled">
+			Empty Board!
+			<i class="fa fa-times"></i>
+		</button>
 	</div>
 	
-	<!-- <table>
-		<tr>
-			<td>1</td>
-			<td>5</td>
-			<td></td>
-			<td>2</td>
-			<td></td>
-			<td>7</td>
-			<td></td>
-			<td>6</td>
-			<td>4</td>
-		</tr>
-		<tr>
-			<td>7</td>
-			<td></td>
-			<td></td>
-			<td>1</td>
-			<td></td>
-			<td>8</td>
-			<td></td>
-			<td></td>
-			<td>3</td>
-		</tr>
-		<tr class="big-border-bottom">
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>5</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>2</td>
-			<td>9</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>4</td>
-			<td>7</td>
-		</tr>
-		<tr>
-			<td></td>
-			<td></td>
-			<td>8</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>2</td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr class="big-border-bottom">
-			<td>6</td>
-			<td>7</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>8</td>
-			<td>9</td>
-		</tr>
-		<tr>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td>2</td>
-			<td></td>
-			<td></td>
-			<td></td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>5</td>
-			<td></td>
-			<td></td>
-			<td>6</td>
-			<td></td>
-			<td>1</td>
-			<td></td>
-			<td></td>
-			<td>8</td>
-		</tr>
-		<tr>
-			<td>4</td>
-			<td>8</td>
-			<td></td>
-			<td>7</td>
-			<td></td>
-			<td>9</td>
-			<td></td>
-			<td>5</td>
-			<td>2</td>
-		</tr>
-	</table> -->
+	<div id="solutionContainer">
+		<h2>Solution: </h2>
+		<table id="solution">
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr class="big-border-bottom">
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr class="big-border-bottom">
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+	</div>
+	
+	<div class="white-cover"></div>
+	<img class="center" src="img/loading.gif" alt="loading gif">
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script src="js/script.js"></script>
 </body>
