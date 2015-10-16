@@ -19,39 +19,81 @@ function changeButtonState() {
 function fillMap() {
 	$('table tbody tr').each(function(i) {
 		$(this).find('td input').each(function(j) {
-			var value;
+			var value = parseInt($(this).val());
 
-			if ($(this).val() == '')
+			if (isNaN(value))
 				value = -1;
-			else
-				value = parseInt($(this).val())
 
 			board[i][j] = value;
 		});
 	});
 }
 
-function checkRow(value, index) {
-	;
+function checkRows() {
+	for (var i = 0; i < 9; i++) {
+		var row = new Array(9);
+
+		for (var j = 0; j < 9; j++) {
+			var value = board[i][j];
+
+			if (~value && ~row.indexOf(value))
+				return false;
+			else
+				row.push(value);
+		}
+	}
+
+	return true;
+}
+
+function checkColumns() {
+	for (var j = 0; j < 9; j++) {
+		var column = new Array(9);
+
+		for (var i = 0; i < 9; i++) {
+			var value = board[i][j];
+
+			if (~value && ~column.indexOf(value))
+				return false;
+			else
+				column.push(value);
+		}
+	}
+
+	return true;
+}
+
+function checkSquares() {
+	for (var i = 0; i < 9; i += 3) {
+		for (var j = 0; j < 9; j += 3) {
+			var square = new Array(9);
+
+			for (var k = i; k < i + 3; k++) {
+				for (var l = j; l < j + 3; l++) {
+					var value = board[k][l];
+
+					if (~value && ~square.indexOf(value))
+						return false;
+					else
+						square.push(value);
+				}
+			}
+
+		}
+	}
+
+	return true;
 }
 
 function validateMap() {
-	$('table tbody td input').each(function(index) {
-		var valueOfCell = $(this).val();
-
-		if (valueOfCell != '') {
-			var col = index % 9;
-			var row = index / 9;
-
-			checkRow(valueOfCell, row);
-		}
-	});
+	return checkRows() && checkColumns() && checkSquares();
 }
 
 function buildMap() {
 	fillMap();
-	//validateMap();
+	validateMap();
 }
+
 
 $(function() {
 	/* Global variables */
