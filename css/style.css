@@ -52,6 +52,11 @@ td input {
 	font-style: italic;
 }
 
+.pre-chosen-numbers {
+	font-weight: bolder;
+	font-style: italic;
+}
+
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -66,11 +71,13 @@ input[type="number"] {
 	text-align: center;
 	margin-top: 40px;
 	border-top: 1px solid black;
+	padding-top: 20px;
 }
 
 table#solution {
 	width: 365px;
 	height: 383px;
+	margin-bottom: 20px;
 }
 
 table#solution td {

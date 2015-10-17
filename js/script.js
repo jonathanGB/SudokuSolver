@@ -28,6 +28,8 @@ function fillMap() {
 
 			if (isNaN(value))
 				value = -1;
+			else
+				$('table#solution tbody tr:eq('+i+') td:eq('+j+')').addClass('pre-chosen-numbers');
 
 			board[i][j] = value;
 		});
@@ -188,6 +190,14 @@ function fillPossibilities() {
 	console.log("finished first wave");
 }
 
+function populateSolutionTable() {
+	$('table#solution tbody tr').each(function(i) {
+		$(this).find('td').each(function(j) {
+			$(this).text(board[i][j]);
+		});
+	});
+}
+
 function buildMap() {
 	fillMap();
 
@@ -196,18 +206,20 @@ function buildMap() {
 	if (validateAllCells()) {
 		console.log("valid");
 		$('div.alert').fadeOut();
-		// popover("fadein")
+		popover("fadein")
+
 		if (fillPossibilities()) {
 			console.log("SOLUTION FOUND!");
-			// popover("fadeout")
-			// populate solution table
-			// show solution table
+			popover("fadeout")
+			populateSolutionTable();
+			$('#solutionContainer').fadeIn();
 		} else {
 			// find missing cells
 			// popover("fadeout")
 			// populate solution table
 			// show solution table
 		}
+
 	} else {
 		console.log("invalid");
 		$('div.alert').fadeIn();
