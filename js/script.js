@@ -199,6 +199,7 @@ function populateSolutionTable() {
 }
 
 function buildMap() {
+	// start millis count
 	fillMap();
 
 	$('#solutionContainer').fadeOut();
@@ -209,12 +210,14 @@ function buildMap() {
 		popover("fadein")
 
 		if (fillPossibilities()) {
+			// end millis count
 			console.log("SOLUTION FOUND!");
 			popover("fadeout")
 			populateSolutionTable();
 			$('#solutionContainer').fadeIn();
 		} else {
 			// find missing cells
+			// end millis count
 			// popover("fadeout")
 			// populate solution table
 			// show solution table
