@@ -182,10 +182,7 @@ function fillPossibilities() {
 		}
 	} while (restart);
 
-	if (solutionFound())
-		return true;
-	else
-		return false;
+	return solutionFound();
 	
 	console.log("finished first wave");
 }
@@ -254,13 +251,13 @@ $(function() {
 
 	/* Events */
 	$('tbody input').on('keypress paste', function(e) {
-		var BACKSPACE = 8, ONE = 49, NINE = 57;
+		var ONE = 49, NINE = 57;
 		if (e.type === "paste")
 			e.preventDefault();
 		else {
 			var key = e.keyCode || e.charCode;
 			
-			if (key != BACKSPACE && (this.value != '' || (key < ONE || key > NINE)))
+			if (this.value != '' || (key < ONE || key > NINE))
 				e.preventDefault();
 		}
 	});
