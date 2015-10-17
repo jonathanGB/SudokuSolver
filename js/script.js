@@ -34,56 +34,76 @@ function fillMap() {
 	});
 }
 
-function checkRows() {
-	for (var i = 0; i < 9; i++) {
-		var row = new Array(9);
+function checkRow(i, arr) {
+	var row = new Array(9);
 
-		for (var j = 0; j < 9; j++) {
-			var value = board[i][j];
-
-			if (~value && ~row.indexOf(value))
-				return false;
-			else
-				row.push(value);
-		}
-	}
-
-	return true;
-}
-
-function checkColumns() {
 	for (var j = 0; j < 9; j++) {
-		var column = new Array(9);
+		var value = arr[i][j];
 
-		for (var i = 0; i < 9; i++) {
-			var value = board[i][j];
+		if (~value && ~row.indexOf(value))
+			return false;
+		else
+			row.push(value);
+	}
 
-			if (~value && ~column.indexOf(value))
+	return true;
+}
+
+function checkAllRows() {
+	for (var i = 0; i < 9; i++) {
+		if (!checkRow(i, board)) 
+			return false;
+	}
+
+	return true;
+}
+
+function checkColumn(j, arr) {
+	var column = new Array(9);
+
+	for (var i = 0; i < 9; i++) {
+		var value = arr[i][j];
+
+		if (~value && ~column.indexOf(value))
+			return false;
+		else
+			column.push(value);
+	}
+
+	return true;
+}
+
+function checkAllColumns() {
+	for (var j = 0; j < 9; j++) {
+		if (!checkColumn(j, board))
+			return false;
+	}
+
+	return true;
+}
+
+function checkSquare(i, j, arr) {
+	var square = new Array(9);
+
+	for (var k = i; k < i + 3; k++) {
+		for (var l = j; l < j + 3; l++) {
+			var value = arr[k][l];
+
+			if (~value && ~square.indexOf(value))
 				return false;
 			else
-				column.push(value);
+				square.push(value);
 		}
 	}
 
 	return true;
 }
 
-function checkSquares() {
+function checkAllSquares() {
 	for (var i = 0; i < 9; i += 3) {
 		for (var j = 0; j < 9; j += 3) {
-			var square = new Array(9);
-
-			for (var k = i; k < i + 3; k++) {
-				for (var l = j; l < j + 3; l++) {
-					var value = board[k][l];
-
-					if (~value && ~square.indexOf(value))
-						return false;
-					else
-						square.push(value);
-				}
-			}
-
+			if (!checkSquare(i, j, board))
+				return false;
 		}
 	}
 
@@ -97,8 +117,75 @@ function popover(fade) {
 		$('div.white-cover, img.center').fadeIn();
 }
 
-function validateMap() {
-	return checkRows() && checkColumns() && checkSquares();
+function validateCell(i, j, arr) {
+	var iSquare = parseInt(i / 3) * 3, jSquare = parseInt(j / 3) * 3;
+
+	return checkRow(i, arr) && checkColumn(j, arr) && checkSquare(iSquare, jSquare, arr);
+}
+
+function validateAllCells() {
+	return checkAllRows() && checkAllColumns() && checkAllSquares();
+}
+
+function initializePossibilities() {
+	for (var i = 0; i < 9; i++) {
+		for (var j = 0; j < 9; j++) {
+			possibilities[i][j] = [];
+		}
+	}
+}
+
+function solutionFound() {
+	for (var i = 0; i < 9; i++) {
+		for (var j = 0; j < 9; j++) {
+			if (board[i][j] == -1)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+function fillPossibilities() {
+	var restart;
+
+	do {
+		restart = false;
+
+		initializePossibilities();
+
+		for (var i = 0; i < 9; i++) {
+			for (var j = 0; j < 9; j++) {
+				var value = board[i][j];
+
+				if (value == -1) {
+					for (var k = 1; k <= 9; k++) {
+						board[i][j] = k;
+
+						if (validateCell(i, j, board))
+							possibilities[i][j].push(k);
+					}
+
+					if (possibilities[i][j].length == 1) {
+						board[i][j] = possibilities[i][j][0];
+						restart = true;
+						break;
+					} else
+						board[i][j] = -1;
+				}
+			}
+
+			if (restart)
+				break;
+		}
+	} while (restart);
+
+	if (solutionFound())
+		return true;
+	else
+		return false;
+	
+	console.log("finished first wave");
 }
 
 function buildMap() {
@@ -106,15 +193,23 @@ function buildMap() {
 
 	$('#solutionContainer').fadeOut();
 
-	if (validateMap()) {
+	if (validateAllCells()) {
+		console.log("valid");
 		$('div.alert').fadeOut();
 		// popover("fadein")
-		// generate solution
-		// popover("fadeout")
-		// populate solution table
-		// show solution table
-
+		if (fillPossibilities()) {
+			console.log("SOLUTION FOUND!");
+			// popover("fadeout")
+			// populate solution table
+			// show solution table
+		} else {
+			// find missing cells
+			// popover("fadeout")
+			// populate solution table
+			// show solution table
+		}
 	} else {
+		console.log("invalid");
 		$('div.alert').fadeIn();
 		changeButtonState('disable');
 	}
@@ -125,10 +220,14 @@ function buildMap() {
 $(function() {
 	/* Global variables */
 
-	// create board Matrix
-	board = [];
-	for (var i = 0; i < 9; i++)
+	// create board Matrix and possibilites Cube
+	board = [], possibilities = [];
+	for (var i = 0; i < 9; i++) {
 		board[i] = new Array(9);
+		possibilities[i] = new Array(9);
+	}
+
+	initializePossibilities();
 
 
 	/* At start */
