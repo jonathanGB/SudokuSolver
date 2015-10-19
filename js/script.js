@@ -51,9 +51,9 @@ function checkRow(i, arr) {
 	return true;
 }
 
-function checkAllRows() {
+function checkAllRows(arr) {
 	for (var i = 0; i < 9; i++) {
-		if (!checkRow(i, board)) 
+		if (!checkRow(i, arr)) 
 			return false;
 	}
 
@@ -75,9 +75,9 @@ function checkColumn(j, arr) {
 	return true;
 }
 
-function checkAllColumns() {
+function checkAllColumns(arr) {
 	for (var j = 0; j < 9; j++) {
-		if (!checkColumn(j, board))
+		if (!checkColumn(j, arr))
 			return false;
 	}
 
@@ -101,10 +101,10 @@ function checkSquare(i, j, arr) {
 	return true;
 }
 
-function checkAllSquares() {
+function checkAllSquares(arr) {
 	for (var i = 0; i < 9; i += 3) {
 		for (var j = 0; j < 9; j += 3) {
-			if (!checkSquare(i, j, board))
+			if (!checkSquare(i, j, arr))
 				return false;
 		}
 	}
@@ -125,8 +125,8 @@ function validateCell(i, j, arr) {
 	return checkRow(i, arr) && checkColumn(j, arr) && checkSquare(iSquare, jSquare, arr);
 }
 
-function validateAllCells() {
-	return checkAllRows() && checkAllColumns() && checkAllSquares();
+function validateAllCells(arr) {
+	return checkAllRows(arr) && checkAllColumns(arr) && checkAllSquares(arr);
 }
 
 function initializePossibilities() {
@@ -137,10 +137,10 @@ function initializePossibilities() {
 	}
 }
 
-function solutionFound() {
+function solutionFound(arr) {
 	for (var i = 0; i < 9; i++) {
 		for (var j = 0; j < 9; j++) {
-			if (board[i][j] == -1)
+			if (arr[i][j] == -1)
 				return false;
 		}
 	}
@@ -148,7 +148,7 @@ function solutionFound() {
 	return true;
 }
 
-function fillPossibilities() {
+function fillPossibilities(arr) {
 	var restart;
 
 	do {
@@ -158,22 +158,22 @@ function fillPossibilities() {
 
 		for (var i = 0; i < 9; i++) {
 			for (var j = 0; j < 9; j++) {
-				var value = board[i][j];
+				var value = arr[i][j];
 
 				if (value == -1) {
 					for (var k = 1; k <= 9; k++) {
-						board[i][j] = k;
+						arr[i][j] = k;
 
-						if (validateCell(i, j, board))
+						if (validateCell(i, j, arr))
 							possibilities[i][j].push(k);
 					}
 
 					if (possibilities[i][j].length == 1) {
-						board[i][j] = possibilities[i][j][0];
+						arr[i][j] = possibilities[i][j][0];
 						restart = true;
 						break;
 					} else
-						board[i][j] = -1;
+						arr[i][j] = -1;
 				}
 			}
 
@@ -182,9 +182,43 @@ function fillPossibilities() {
 		}
 	} while (restart);
 
-	return solutionFound();
-	
 	console.log("finished first wave");
+}
+
+/* Needs to be reworked (with solveMissingCells) */
+function deriveAvailableNumbers(i) {
+	var availableNumbers = [];
+
+	for (var j = 1; j <= 9; j++) {
+		if (board[i].indexOf(j) == -1)
+			availableNumbers.push(j);
+	}
+
+	return availableNumbers;
+}
+
+function solveMissingCells() {
+	var arr = board.slice(0);
+
+	for (var i = 0; i < 9; i++) {
+		var availableNumbers = deriveAvailableNumbers(i);
+
+		for (var j = 0; j < 9; j++) {
+			if (arr[i][j] == -1) {
+				var k, value;
+
+				do {
+					k = Math.floor(Math.random() * possibilities[i][j].length);
+					value = possibilities[i][j][k];
+				} while (availableNumbers.indexOf(value) == -1);
+				console.log("ouuuuuut");
+				arr[i][j] = value;
+				availableNumbers.splice(availableNumbers.indexOf(value),1);
+			}
+		}
+	}
+
+	return arr;
 }
 
 function populateSolutionTable() {
@@ -196,29 +230,30 @@ function populateSolutionTable() {
 }
 
 function buildMap() {
-	// start millis count
+	var beg = new Date().getTime(), end;
 	fillMap();
 
 	$('#solutionContainer').fadeOut();
 
-	if (validateAllCells()) {
+	if (validateAllCells(board)) {
 		console.log("valid");
 		$('div.alert').fadeOut();
 		popover("fadein")
 
-		if (fillPossibilities()) {
-			// end millis count
-			console.log("SOLUTION FOUND!");
-			popover("fadeout")
-			populateSolutionTable();
-			$('#solutionContainer').fadeIn();
-		} else {
-			// find missing cells
-			// end millis count
-			// popover("fadeout")
-			// populate solution table
-			// show solution table
+		fillPossibilities(board);
+
+		if (!solutionFound(board)) {
+			console.log("more complex stuff");
+			// do {
+			// 	var possibleSolution = solveMissingCells();
+			// } while (!checkAllColumns(possibleSolution) || !checkAllSquares(possibleSolution));
 		}
+
+		end = new Date().getTime();
+		console.log("SOLUTION FOUND in " + (end - beg) + "ms!");
+		popover("fadeout")
+		populateSolutionTable();
+		$('#solutionContainer').fadeIn();
 
 	} else {
 		console.log("invalid");
@@ -272,6 +307,7 @@ $(function() {
 	$('button#remove').click(function() {
 		if (!$(this).hasClass('pure-button-disabled')) {
 			$('table#base tbody td input').val('');
+			$('#solutionContainer').fadeOut();
 			changeButtonState();
 		}
 	});
