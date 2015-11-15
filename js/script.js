@@ -27,7 +27,7 @@ function fillMap() {
 			var value = parseInt($(this).val());
 
 			if (isNaN(value))
-				value = -1;
+				value = 0;
 			else
 				$('table#solution tbody tr:eq('+i+') td:eq('+j+')').addClass('pre-chosen-numbers');
 
@@ -42,7 +42,7 @@ function checkRow(i, arr) {
 	for (var j = 0; j < 9; j++) {
 		var value = arr[i][j];
 
-		if (~value && ~row.indexOf(value))
+		if (value && ~row.indexOf(value))
 			return false;
 		else
 			row.push(value);
@@ -66,7 +66,7 @@ function checkColumn(j, arr) {
 	for (var i = 0; i < 9; i++) {
 		var value = arr[i][j];
 
-		if (~value && ~column.indexOf(value))
+		if (value && ~column.indexOf(value))
 			return false;
 		else
 			column.push(value);
@@ -91,7 +91,7 @@ function checkSquare(i, j, arr) {
 		for (var l = j; l < j + 3; l++) {
 			var value = arr[k][l];
 
-			if (~value && ~square.indexOf(value))
+			if (value && ~square.indexOf(value))
 				return false;
 			else
 				square.push(value);
@@ -140,7 +140,7 @@ function initializePossibilities() {
 function solutionFound(arr) {
 	for (var i = 0; i < 9; i++) {
 		for (var j = 0; j < 9; j++) {
-			if (arr[i][j] == -1)
+			if (!arr[i][j])
 				return false;
 		}
 	}
@@ -160,7 +160,7 @@ function fillPossibilities(arr) {
 			for (var j = 0; j < 9; j++) {
 				var value = arr[i][j];
 
-				if (value == -1) {
+				if (!value) {
 					for (var k = 1; k <= 9; k++) {
 						arr[i][j] = k;
 
@@ -173,7 +173,7 @@ function fillPossibilities(arr) {
 						restart = true;
 						break;
 					} else
-						arr[i][j] = -1;
+						arr[i][j] = 0;
 				}
 			}
 
@@ -187,38 +187,11 @@ function fillPossibilities(arr) {
 
 /* Needs to be reworked (with solveMissingCells) */
 function deriveAvailableNumbers(i) {
-	var availableNumbers = [];
 
-	for (var j = 1; j <= 9; j++) {
-		if (board[i].indexOf(j) == -1)
-			availableNumbers.push(j);
-	}
-
-	return availableNumbers;
 }
 
 function solveMissingCells() {
-	var arr = board.slice(0);
-
-	for (var i = 0; i < 9; i++) {
-		var availableNumbers = deriveAvailableNumbers(i);
-
-		for (var j = 0; j < 9; j++) {
-			if (arr[i][j] == -1) {
-				var k, value;
-
-				do {
-					k = Math.floor(Math.random() * possibilities[i][j].length);
-					value = possibilities[i][j][k];
-				} while (availableNumbers.indexOf(value) == -1);
-				console.log("ouuuuuut");
-				arr[i][j] = value;
-				availableNumbers.splice(availableNumbers.indexOf(value),1);
-			}
-		}
-	}
-
-	return arr;
+	
 }
 
 function populateSolutionTable() {
@@ -229,7 +202,7 @@ function populateSolutionTable() {
 	});
 }
 
-function buildMap() {
+function solveSudoku() {
 	var beg = new Date().getTime(), end;
 	fillMap();
 
@@ -301,12 +274,13 @@ $(function() {
 
 	$('button#solve').click(function() {
 		if (!$(this).hasClass('pure-button-disabled'))
-			buildMap();
+			solveSudoku();
 	});
 
 	$('button#remove').click(function() {
 		if (!$(this).hasClass('pure-button-disabled')) {
 			$('table#base tbody td input').val('');
+			$('table#solution tbody td').removeClass('pre-chosen-numbers');
 			$('#solutionContainer').fadeOut();
 			changeButtonState();
 		}
