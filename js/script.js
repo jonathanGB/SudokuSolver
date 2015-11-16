@@ -405,15 +405,12 @@ function findTwoDuetsInSquare() {
 							for (var n = l; n < j + 3; n++) {
 								if (m == k && n == l)
 									break;
-								
-								if (arr.equals(possibilities[m][n])) {
-									var val1 = possibilities[k][l][0], val2 = possibilities[k][l][1];
 
+								if (arr.equals(possibilities[m][n])) {
+									var val1 = arr[0], val2 = arr][1];
+
+									console.log("duet found");
 									removeOtherOccasions(k, l, m, n, val1, val2);
-									updatePossibilitiesTable(k, l, val1, true, true, false);
-									updatePossibilitiesTable(k, l, val2, true, true, false);
-									updatePossibilitiesTable(m, n, val1, true, true, false);
-									updatePossibilitiesTable(m, n, val2, true, true, false);
 								}
 							}
 						}
@@ -472,9 +469,9 @@ function solveSudoku() {
 				var count = 0;
 
 				findTwoDuetsInSquare();
+				count += findHiddenPossibilities();
 				count += onlyInRow();
 				count += onlyInColumn();
-				count += findHiddenPossibilities();
 			} while (count > 0);
 
 			if (!solutionFound(board)) {// brute force, genetic algorithm?
