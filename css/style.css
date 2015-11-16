@@ -50,11 +50,13 @@ td input {
 	text-align: center;
 	font-weight: bolder;
 	font-style: italic;
+	color: #050569;
 }
 
 .pre-chosen-numbers {
 	font-weight: bolder;
 	font-style: italic;
+	color: #050569;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -92,11 +94,11 @@ table {
 }
 
 .big-border-bottom {
-	border-bottom: 2px solid black;
+	border-bottom: 3px solid black;
 }
 
 .big-border-right {
-	border-right: 2px solid black;
+	border-right: 3px solid black;
 }
 
 #buttonSolve {

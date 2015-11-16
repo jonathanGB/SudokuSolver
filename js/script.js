@@ -38,7 +38,9 @@ Object.defineProperty(Array.prototype, "equals", {enumerable: false});
 // Change the button state from disabled to enabled depending on if the table is empty or not
 function changeButtonState(state) {
 	if (state == "disable") {
-		$('#buttonSolve button').addClass('pure-button-disabled');
+		$('button#solve').addClass('pure-button-disabled');
+	} else if (state == "enable") {
+		$('#buttonSolve button').removeClass('pure-button-disabled');
 	} else {
 		var flag = true;
 
@@ -532,6 +534,24 @@ function solveSudoku() {
 
 }
 
+function manipulateCopiedMatrix(text) {
+	var arr = text.split(/\s+/);
+	var flag = false;
+
+	if (arr.length == 9 * 9) {
+		arr.forEach(function(val, i) {
+			if (val != 0) {
+				var row = parseInt(i / 9), col = i % 9;
+				flag = true;
+
+				$('table#base tbody tr:eq('+row+') td:eq('+col+') input').val(val);
+			}
+		});
+	}
+
+	return flag; 
+}
+
 
 $(function() {
 	/* Global variables */
@@ -555,18 +575,26 @@ $(function() {
 
 	/* Events */
 	$('tbody input').on('keypress paste', function(e) {
-		var ONE = 49, NINE = 57;
-		if (e.type === "paste")
+		var key = e.keyCode || e.charCode;
+		var ONE = 49, NINE = 57, SPACE = 32, DEL = 127;
+
+		if (e.type === "paste") {
+			var text = e.originalEvent.clipboardData || window.clipboardData;
+			text = text.getData('text');
+
+			if (manipulateCopiedMatrix(text))
+				changeButtonState("enable");
+
 			e.preventDefault();
-		else {
-			var key = e.keyCode || e.charCode;
-			
-			if (this.value != '' || (key < ONE || key > NINE))
+		}
+		else if (key >= SPACE && key < DEL ) { // keypress polyfill for firefox
+			if (this.value != '' || (key < ONE || key > NINE)) {
 				e.preventDefault();
+			}
 		}
 	});
 
-	$('tbody input').on('keyup click', changeButtonState);
+	$('tbody input').on('keyup mousedown', changeButtonState);
 
 	$('button#solve').click(function() {
 		if (!$(this).hasClass('pure-button-disabled'))
@@ -577,7 +605,7 @@ $(function() {
 		if (!$(this).hasClass('pure-button-disabled')) {
 			$('table#base tbody td input').val('');
 			$('table#solution tbody td').removeClass('pre-chosen-numbers');
-			$('#solutionContainer').fadeOut();
+			$('#solutionContainer').slideUp();
 			changeButtonState();
 		}
 	});
