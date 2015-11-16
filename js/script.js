@@ -223,7 +223,6 @@ function fillPossibilities(arr) {
 
 function findHiddenPossibilities() {
 	var loop = 0, count = 0;
-
 	do {
 		for (var i = 0; i < 9; i += 3) {
 			for (var j = 0; j < 9; j += 3) {
@@ -240,7 +239,10 @@ function findHiddenPossibilities() {
 
 							if (possibilities[k][l].length == 1) {
 								board[k][l] = possibilities[k][l][0];
+								updatePossibilitiesTable(k, l, possibilities[k][l][0], true, true, true);
 								possibilities[k][l] = [];
+								count++;
+								loop = 0;
 								break;
 							}
 
@@ -253,6 +255,11 @@ function findHiddenPossibilities() {
 										oneLine = false;
 									if (firstColumn != l)
 										oneColumn = false;
+
+									if (!firstRow && !firstColumn) {
+										flag = true;
+										break;
+									}
 								}
 							}
 						}
@@ -271,7 +278,7 @@ function findHiddenPossibilities() {
 							loop = 0;
 						}
 
-						if (possibleCells > 1 && (oneLine || oneColumn)) {
+						if (possibleCells > 1) {
 							console.log("possible > 1");
 							oneLine ? 
 								updatePossibilitiesTable(firstRow, firstColumn, val, true, false, false) :
@@ -339,20 +346,33 @@ function onlyInRow() {
 	do {
 		for (var i = 0; i < 9; i++) {
 			for (var val = 1; val <= 9; val++) {
-				var index = -1;
+				var index = -1, ctr = 0;
 
 				for (var j = 0; j < 9; j++) {
-					if (index == -1 && ~possibilities[i][j].indexOf(val))
-						index = j;
-					else if (~index && ~possibilities[i][j].indexOf(val) || board[i][j] == val)
+					if (board[i][j] != val && ~possibilities[i][j].indexOf(val)) {
+						if (index == -1)
+							index = j;	
+						else if (columnOfSquare(j) != columnOfSquare(index))
+							break;
+
+						ctr++;
+					}
+
+					if (board[i][j] == val)
 						break;
 
-					if (~index && j == 9 - 1) {
-						board[i][index] = val;
-						possibilities[i][index] = [];
-						updatePossibilitiesTable(i, index, val, false, true, true);
-						count++;
-						loop = 0;
+					if (j == 9 - 1) {
+						if (ctr == 1) {
+							board[i][index] = val;
+							possibilities[i][index] = [];
+							updatePossibilitiesTable(i, index, val, false, true, true);
+							count++;
+							loop = 0;
+						} else if (ctr > 1) {
+							var j1 = columnOfSquare(index);
+
+							removeOtherOccasions(val, val, i, j1, i, j1 + 1, i, j1 + 2, val);
+						}
 					}
 				}
 			}
@@ -368,20 +388,33 @@ function onlyInColumn() {
 	do {
 		for (var i = 0; i < 9; i++) {
 			for (var val = 1; val <= 9; val++) {
-				var index = -1;
+				var index = -1, ctr = 0;
 
 				for (var j = 0; j < 9; j++) {
-					if (index == -1 && ~possibilities[j][i].indexOf(val))
-						index = j;
-					else if (~index && ~possibilities[j][i].indexOf(val) || board[j][i] == val)
+					if (board[j][i] != val && ~possibilities[j][i].indexOf(val)) {
+						if (index == -1)
+							index = j;
+						else if (rowOfSquare(j) != rowOfSquare(index))
+							break;
+
+						ctr++;
+					} 
+
+					if (board[j][i] == val)
 						break;
 
-					if (~index && j == 9 - 1) {
-						board[index][i] = val;
-						possibilities[index][i] = [];
-						updatePossibilitiesTable(index, i, val, true, false, true);
-						count++;
-						loop = 0;
+					if (j == 9 - 1) {
+						if (ctr == 1) {
+							board[index][i] = val;
+							possibilities[index][i] = [];
+							updatePossibilitiesTable(index, i, val, true, false, true);
+							count++;
+							loop = 0;
+						} else if (ctr > 1) {
+							var j1 = rowOfSquare(index);
+
+							removeOtherOccasions(val, val, j1, i, j1 + 1, i, j1 + 2, i, val);
+						}
 					}
 				}
 			}
@@ -407,7 +440,7 @@ function findTwoDuetsInSquare() {
 									var val1 = arr[0], val2 = arr[1];
 
 									console.log("duet found");
-									removeOtherOccasions(k, l, m, n, val1, val2);
+									removeOtherOccasions(val1, val2, k, l, m, n);
 								}
 							}
 						}
@@ -418,20 +451,27 @@ function findTwoDuetsInSquare() {
 	}
 }
 
-function removeOtherOccasions(i1, j1, i2, j2, val1, val2) {
+function removeOtherOccasions(val1, val2, i1, j1, i2, j2, i3, j3, val3) {
 	var iSquare = rowOfSquare(i1), jSquare = columnOfSquare(j1);
+
+	if (i3 === undefined || j3 === undefined || val3 === undefined)
+		i3 = j3 = val3 = -1;
 
 	for (var i = iSquare; i < iSquare + 3; i++) {
 		for (var j = jSquare; j < jSquare + 3; j++) {
-			if ((i != i1 || j != j1) && (i != i2 || j != j2)) {
+			if ((i != i1 || j != j1) && (i != i2 || j != j2) && (i != i3 || j != j3)) {
 				var index1 = possibilities[i][j].indexOf(val1);
 				var index2 = possibilities[i][j].indexOf(val2);
+				var index3 = possibilities[i][j].indexOf(val3);
 
 				if (~index1)
 					possibilities[i][j].splice(index1, 1);
 
 				if (~index2)
 					possibilities[i][j].splice(index2, 1);
+
+				if (~index3)
+					possibilities[i][j].splice(index3, 1);
 			}
 		}
 	}
@@ -464,8 +504,8 @@ function solveSudoku() {
 			do {
 				var count = 0;
 
-				findTwoDuetsInSquare();
-				count += findHiddenPossibilities();
+				//findTwoDuetsInSquare();
+				//count += findHiddenPossibilities();
 				count += onlyInRow();
 				count += onlyInColumn();
 			} while (count > 0);
