@@ -1,3 +1,38 @@
+/* Modifications to the Prototype */
+
+// as found on StackOverflow
+// Warn if overriding existing method
+if(Array.prototype.equals)
+    console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
+// attach the .equals method to Array's prototype to call it on any array
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time 
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l=this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;       
+        }           
+        else if (this[i] != array[i]) { 
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;   
+        }           
+    }       
+    return true;
+}
+// Hide method from for-in loops
+Object.defineProperty(Array.prototype, "equals", {enumerable: false});
+
+
+
 /* Functions */
 
 // Change the button state from disabled to enabled depending on if the table is empty or not
@@ -231,7 +266,7 @@ function findHiddenPossibilities() {
 							console.log("possible 1");
 							board[firstRow][firstColumn] = val;
 							possibilities[firstRow][firstColumn] = [];
-							updatePossibilitiesTable(firstRow, firstColumn, val, true, true);
+							updatePossibilitiesTable(firstRow, firstColumn, val, true, true, true);
 							count++;
 							loop = 0;
 						}
@@ -239,8 +274,8 @@ function findHiddenPossibilities() {
 						if (possibleCells > 1 && (oneLine || oneColumn)) {
 							console.log("possible > 1");
 							oneLine ? 
-								updatePossibilitiesTable(firstRow, firstColumn, val, true, false) :
-								updatePossibilitiesTable(firstRow, firstColumn, val, false, true);
+								updatePossibilitiesTable(firstRow, firstColumn, val, true, false, false) :
+								updatePossibilitiesTable(firstRow, firstColumn, val, false, true, false);
 						}
 					}
 				}
@@ -253,12 +288,12 @@ function findHiddenPossibilities() {
 	return count;
 }
 
-function updatePossibilitiesTable(row, column, val, updateRow, updateColumn) {
+function updatePossibilitiesTable(row, column, val, updateRow, updateColumn, updateSquare) {
 	var iSquare = rowOfSquare(row), jSquare = columnOfSquare(column);
 
 	if (updateRow) {
 		for (var j = 0; j < 9; j++) {
-			if (rowOfSquare(row) != iSquare && columnOfSquare(j) != jSquare) {
+			if (rowOfSquare(row) != iSquare || columnOfSquare(j) != jSquare) {
 				var index = possibilities[row][j].indexOf(val);
 
 				if (~index)
@@ -269,11 +304,22 @@ function updatePossibilitiesTable(row, column, val, updateRow, updateColumn) {
 
 	if (updateColumn) {
 		for (var i = 0; i < 9; i++) {
-			if (rowOfSquare(i) != iSquare && columnOfSquare(column) != jSquare) {
+			if (rowOfSquare(i) != iSquare || columnOfSquare(column) != jSquare) {
 				var index = possibilities[i][column].indexOf(val);
 
 				if (~index)
 					possibilities[i][column].splice(index, 1);
+			}
+		}
+	}
+
+	if (updateSquare) {
+		for (var i = iSquare; i < iSquare + 3; i++) {
+			for (var j = jSquare; j < jSquare + 3; j++) {
+				var index = possibilities[i][j].indexOf(val);
+
+				if (~index)
+					possibilities[i][j].splice(index, 1);
 			}
 		}
 	}
@@ -304,7 +350,7 @@ function onlyInRow() {
 					if (~index && j == 9 - 1) {
 						board[i][index] = val;
 						possibilities[i][index] = [];
-						updatePossibilitiesTable(i, index, val, true, true);
+						updatePossibilitiesTable(i, index, val, false, true, true);
 						count++;
 						loop = 0;
 					}
@@ -333,7 +379,7 @@ function onlyInColumn() {
 					if (~index && j == 9 - 1) {
 						board[index][i] = val;
 						possibilities[index][i] = [];
-						updatePossibilitiesTable(index, i, val, true, true);
+						updatePossibilitiesTable(index, i, val, true, false, true);
 						count++;
 						loop = 0;
 					}
@@ -345,13 +391,57 @@ function onlyInColumn() {
 	return count;
 }
 
-/* Needs to be reworked (with solveMissingCells) */
-function deriveAvailableNumbers(i) {
+function findTwoDuetsInSquare() {
+	for (var i = 0; i < 9; i += 3) {
+		for (var j = 0; j < 9; j += 3) {
+			for (var k = i; k < i + 3; k++) {
+				for (var l = j; l < j + 3; l++) {
+					var arr;
 
+					if (possibilities[k][l].length == 2) {
+						arr = possibilities[k][l];
+
+						for (var m = k; m < i + 3; m++) {
+							for (var n = l; n < j + 3; n++) {
+								if (m == k && n == l)
+									break;
+								
+								if (arr.equals(possibilities[m][n])) {
+									var val1 = possibilities[k][l][0], val2 = possibilities[k][l][1];
+
+									removeOtherOccasions(k, l, m, n, val1, val2);
+									updatePossibilitiesTable(k, l, val1, true, true, false);
+									updatePossibilitiesTable(k, l, val2, true, true, false);
+									updatePossibilitiesTable(m, n, val1, true, true, false);
+									updatePossibilitiesTable(m, n, val2, true, true, false);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
-function solveMissingCells() {
-	
+function removeOtherOccasions(i1, j1, i2, j2, val1, val2) {
+	var iSquare = rowOfSquare(i1), jSquare = columnOfSquare(j1);
+
+	for (var i = iSquare; i < iSquare + 3; i++) {
+		for (var j = jSquare; j < jSquare + 3; j++) {
+			if (i == i1 && j == j1 || i == i2 && j == j2)
+				break;
+
+			var index1 = possibilities[i][j].indexOf(val1);
+			var index2 = possibilities[i][j].indexOf(val2);
+
+			if (~index1)
+				possibilities[i][j].splice(index1, 1);
+
+			if (~index2)
+				possibilities[i][j].splice(index2, 1);
+		}
+	}
 }
 
 function populateSolutionTable() {
@@ -380,6 +470,8 @@ function solveSudoku() {
 			
 			do {
 				var count = 0;
+
+				findTwoDuetsInSquare();
 				count += onlyInRow();
 				count += onlyInColumn();
 				count += findHiddenPossibilities();
