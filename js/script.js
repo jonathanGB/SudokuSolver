@@ -293,7 +293,6 @@ function onlyInRow() {
 	do {
 		for (var i = 0; i < 9; i++) {
 			for (var val = 1; val <= 9; val++) {
-				if (i == 1 && val == 8) debugger;
 				var index = -1;
 
 				for (var j = 0; j < 9; j++) {
