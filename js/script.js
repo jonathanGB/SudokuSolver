@@ -403,11 +403,8 @@ function findTwoDuetsInSquare() {
 
 						for (var m = k; m < i + 3; m++) {
 							for (var n = l; n < j + 3; n++) {
-								if (m == k && n == l)
-									break;
-
-								if (arr.equals(possibilities[m][n])) {
-									var val1 = arr[0], val2 = arr][1];
+								if ((m != k || n != l) && arr.equals(possibilities[m][n])) {
+									var val1 = arr[0], val2 = arr[1];
 
 									console.log("duet found");
 									removeOtherOccasions(k, l, m, n, val1, val2);
@@ -426,17 +423,16 @@ function removeOtherOccasions(i1, j1, i2, j2, val1, val2) {
 
 	for (var i = iSquare; i < iSquare + 3; i++) {
 		for (var j = jSquare; j < jSquare + 3; j++) {
-			if (i == i1 && j == j1 || i == i2 && j == j2)
-				break;
+			if ((i != i1 || j != j1) && (i != i2 || j != j2)) {
+				var index1 = possibilities[i][j].indexOf(val1);
+				var index2 = possibilities[i][j].indexOf(val2);
 
-			var index1 = possibilities[i][j].indexOf(val1);
-			var index2 = possibilities[i][j].indexOf(val2);
+				if (~index1)
+					possibilities[i][j].splice(index1, 1);
 
-			if (~index1)
-				possibilities[i][j].splice(index1, 1);
-
-			if (~index2)
-				possibilities[i][j].splice(index2, 1);
+				if (~index2)
+					possibilities[i][j].splice(index2, 1);
+			}
 		}
 	}
 }
