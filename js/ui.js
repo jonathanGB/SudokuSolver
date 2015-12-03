@@ -118,11 +118,6 @@ function manipulateCopiedMatrix(text) {
 	return flag; 
 }
 
-function callSolverFunction(callback) {
-	if (typeof callback === 'function')
-		callback();
-}
-
 function init() {
 	/* Global variables */
 
@@ -132,7 +127,7 @@ function init() {
 		board[i] = new Array(9);
 		possibilities[i] = new Array(9);
 	}
-	
+
 	initializePossibilities();
 
 
