@@ -72,7 +72,7 @@ function solveSudoku() {
 			do {
 				var count = 0;
 
-				//findTwoDuetsInSquare();
+				findTwoDuetsInSquare();
 				//count += findHiddenPossibilities();
 				count += onlyInRow();
 				count += onlyInColumn();

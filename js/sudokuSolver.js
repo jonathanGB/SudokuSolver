@@ -420,15 +420,14 @@ function removeOtherOccasions(val1, val2, i1, j1, i2, j2, i3, j3, val3) {
 		for (var j = jSquare; j < jSquare + 3; j++) {
 			if ((i != i1 || j != j1) && (i != i2 || j != j2) && (i != i3 || j != j3)) {
 				var index1 = possibilities[i][j].indexOf(val1);
-				var index2 = possibilities[i][j].indexOf(val2);
-				var index3 = possibilities[i][j].indexOf(val3);
-
 				if (~index1)
 					possibilities[i][j].splice(index1, 1);
 
+				var index2 = possibilities[i][j].indexOf(val2);
 				if (~index2)
 					possibilities[i][j].splice(index2, 1);
 
+				var index3 = possibilities[i][j].indexOf(val3);
 				if (~index3)
 					possibilities[i][j].splice(index3, 1);
 			}
