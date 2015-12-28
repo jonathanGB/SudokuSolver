@@ -1,0 +1,16 @@
+To do...
+Add comments / restructure code
+Fix solving methods
+Add a genetic algorithm in last resort
+
+After all that...
+Do some changes on the UI/UX ?
+
+Bonus (neural network)...
+Upgrade the tool so it starts from a picture of an unsolved sudoku and maps the values using a neural network
+Here's how it'd go
+  --> User takes a picture or choose an existing image
+  --> User uploads image, which is sent to the server
+  --> Server receives the image, decrypts it and returns its guess of the grid to the user
+  --> User can validate the guess of the server, or easily correct errors
+  --> Once that's done, we're back to the initial problem of solving the sudoku, which should be done at this point
