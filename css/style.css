@@ -101,7 +101,7 @@ table {
 	border-right: 3px solid black;
 }
 
-#buttonSolve {
+#solveEmptyButtons {
 	padding-top: 20px;
 	text-align: center;
 }

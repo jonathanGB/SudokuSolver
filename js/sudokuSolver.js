@@ -36,9 +36,9 @@ Object.defineProperty(Array.prototype, "equals", {enumerable: false});
 /* Functions */
 
 function checkRow(i, arr) {
-	var row = new Array(9);
+	var row = new Array(SIZE_OF_BOARD);
 
-	for (var j = 0; j < 9; j++) {
+	for (var j = 0; j < SIZE_OF_BOARD; j++) {
 		var value = arr[i][j];
 
 		if (value && ~row.indexOf(value))
@@ -51,7 +51,7 @@ function checkRow(i, arr) {
 }
 
 function checkAllRows(arr) {
-	for (var i = 0; i < 9; i++) {
+	for (var i = 0; i < SIZE_OF_BOARD; i++) {
 		if (!checkRow(i, arr)) 
 			return false;
 	}
@@ -60,9 +60,9 @@ function checkAllRows(arr) {
 }
 
 function checkColumn(j, arr) {
-	var column = new Array(9);
+	var column = new Array(SIZE_OF_BOARD);
 
-	for (var i = 0; i < 9; i++) {
+	for (var i = 0; i < SIZE_OF_BOARD; i++) {
 		var value = arr[i][j];
 
 		if (value && ~column.indexOf(value))
@@ -75,7 +75,7 @@ function checkColumn(j, arr) {
 }
 
 function checkAllColumns(arr) {
-	for (var j = 0; j < 9; j++) {
+	for (var j = 0; j < SIZE_OF_BOARD; j++) {
 		if (!checkColumn(j, arr))
 			return false;
 	}
@@ -84,10 +84,10 @@ function checkAllColumns(arr) {
 }
 
 function checkSquare(i, j, arr) {
-	var square = new Array(9);
+	var square = new Array(SIZE_OF_BOARD);
 
-	for (var k = i; k < i + 3; k++) {
-		for (var l = j; l < j + 3; l++) {
+	for (var k = i; k < i + SIZE_OF_SQUARE; k++) {
+		for (var l = j; l < j + SIZE_OF_SQUARE; l++) {
 			var value = arr[k][l];
 
 			if (value && ~square.indexOf(value))
@@ -101,8 +101,8 @@ function checkSquare(i, j, arr) {
 }
 
 function checkAllSquares(arr) {
-	for (var i = 0; i < 9; i += 3) {
-		for (var j = 0; j < 9; j += 3) {
+	for (var i = 0; i < SIZE_OF_BOARD; i += SIZE_OF_SQUARE) {
+		for (var j = 0; j < SIZE_OF_BOARD; j += SIZE_OF_SQUARE) {
 			if (!checkSquare(i, j, arr))
 				return false;
 		}
@@ -124,16 +124,16 @@ function validateAllCells(arr) {
 }
 
 function initializePossibilities() {
-	for (var i = 0; i < 9; i++) {
-		for (var j = 0; j < 9; j++) {
+	for (var i = 0; i < SIZE_OF_BOARD; i++) {
+		for (var j = 0; j < SIZE_OF_BOARD; j++) {
 			possibilities[i][j] = [];
 		}
 	}
 }
 
 function solutionFound(arr) {
-	for (var i = 0; i < 9; i++) {
-		for (var j = 0; j < 9; j++) {
+	for (var i = 0; i < SIZE_OF_BOARD; i++) {
+		for (var j = 0; j < SIZE_OF_BOARD; j++) {
 			if (!arr[i][j])
 				return false;
 		}
@@ -144,18 +144,18 @@ function solutionFound(arr) {
 
 function fillPossibilities(arr) {
 	var restart;
-
+	
 	do {
 		restart = false;
 
 		initializePossibilities();
 
-		for (var i = 0; i < 9; i++) {
-			for (var j = 0; j < 9; j++) {
+		for (var i = 0; i < SIZE_OF_BOARD; i++) {
+			for (var j = 0; j < SIZE_OF_BOARD; j++) {
 				var value = arr[i][j];
 
 				if (!value) {
-					for (var k = 1; k <= 9; k++) {
+					for (var k = 1; k <= SIZE_OF_BOARD; k++) {
 						arr[i][j] = k;
 
 						if (validateCell(i, j, arr))
@@ -183,14 +183,14 @@ function fillPossibilities(arr) {
 function findHiddenPossibilities() {
 	var loop = 0, count = 0;
 	do {
-		for (var i = 0; i < 9; i += 3) {
-			for (var j = 0; j < 9; j += 3) {
-				for (var val = 1; val <= 9; val++) {
+		for (var i = 0; i < SIZE_OF_BOARD; i += SIZE_OF_SQUARE) {
+			for (var j = 0; j < SIZE_OF_BOARD; j += SIZE_OF_SQUARE) {
+				for (var val = 1; val <= SIZE_OF_BOARD; val++) {
 					var possibleCells = 0, firstRow = -1, firstColumn = -1;
 					var oneLine = true, oneColumn = true, flag = false;
 
-					for (var k = i; k < i + 3; k++) {
-						for (var l = j; l < j + 3; l++) {
+					for (var k = i; k < i + SIZE_OF_SQUARE; k++) {
+						for (var l = j; l < j + SIZE_OF_SQUARE; l++) {
 							if (board[k][l] == val) {
 								flag = true;
 								break;
@@ -258,7 +258,7 @@ function updatePossibilitiesTable(row, column, val, updateRow, updateColumn, upd
 	var iSquare = rowOfSquare(row), jSquare = columnOfSquare(column);
 
 	if (updateRow) {
-		for (var j = 0; j < 9; j++) {
+		for (var j = 0; j < SIZE_OF_BOARD; j++) {
 			if (rowOfSquare(row) != iSquare || columnOfSquare(j) != jSquare) {
 				var index = possibilities[row][j].indexOf(val);
 
@@ -269,7 +269,7 @@ function updatePossibilitiesTable(row, column, val, updateRow, updateColumn, upd
 	}
 
 	if (updateColumn) {
-		for (var i = 0; i < 9; i++) {
+		for (var i = 0; i < SIZE_OF_BOARD; i++) {
 			if (rowOfSquare(i) != iSquare || columnOfSquare(column) != jSquare) {
 				var index = possibilities[i][column].indexOf(val);
 
@@ -280,8 +280,8 @@ function updatePossibilitiesTable(row, column, val, updateRow, updateColumn, upd
 	}
 
 	if (updateSquare) {
-		for (var i = iSquare; i < iSquare + 3; i++) {
-			for (var j = jSquare; j < jSquare + 3; j++) {
+		for (var i = iSquare; i < iSquare + SIZE_OF_SQUARE; i++) {
+			for (var j = jSquare; j < jSquare + SIZE_OF_SQUARE; j++) {
 				var index = possibilities[i][j].indexOf(val);
 
 				if (~index)
@@ -292,22 +292,22 @@ function updatePossibilitiesTable(row, column, val, updateRow, updateColumn, upd
 }
 
 function rowOfSquare(i) {
-	return parseInt(i / 3) * 3;
+	return parseInt(i / SIZE_OF_SQUARE) * SIZE_OF_SQUARE;
 }
 
 function columnOfSquare(j) {
-	return parseInt(j / 3) * 3
+	return parseInt(j / SIZE_OF_SQUARE) * SIZE_OF_SQUARE
 }
 
 function onlyInRow() {
 	var count = 0, loop = 0;
 	console.log("only in row");
 	do {
-		for (var i = 0; i < 9; i++) {
-			for (var val = 1; val <= 9; val++) {
+		for (var i = 0; i < SIZE_OF_BOARD; i++) {
+			for (var val = 1; val <= SIZE_OF_BOARD; val++) {
 				var index = -1, ctr = 0;
 
-				for (var j = 0; j < 9; j++) {
+				for (var j = 0; j < SIZE_OF_BOARD; j++) {
 					if (board[i][j] != val && ~possibilities[i][j].indexOf(val)) {
 						if (index == -1)
 							index = j;	
@@ -320,7 +320,7 @@ function onlyInRow() {
 					if (board[i][j] == val)
 						break;
 
-					if (j == 9 - 1) {
+					if (j == SIZE_OF_BOARD - 1) {
 						if (ctr == 1) {
 							board[i][index] = val;
 							possibilities[i][index] = [];
@@ -345,11 +345,11 @@ function onlyInColumn() {
 	var count = 0, loop = 0;
 	console.log("only in column");
 	do {
-		for (var i = 0; i < 9; i++) {
-			for (var val = 1; val <= 9; val++) {
+		for (var i = 0; i < SIZE_OF_BOARD; i++) {
+			for (var val = 1; val <= SIZE_OF_BOARD; val++) {
 				var index = -1, ctr = 0;
 
-				for (var j = 0; j < 9; j++) {
+				for (var j = 0; j < SIZE_OF_BOARD; j++) {
 					if (board[j][i] != val && ~possibilities[j][i].indexOf(val)) {
 						if (index == -1)
 							index = j;
@@ -362,7 +362,7 @@ function onlyInColumn() {
 					if (board[j][i] == val)
 						break;
 
-					if (j == 9 - 1) {
+					if (j == SIZE_OF_BOARD - 1) {
 						if (ctr == 1) {
 							board[index][i] = val;
 							possibilities[index][i] = [];
@@ -384,17 +384,17 @@ function onlyInColumn() {
 }
 
 function findTwoDuetsInSquare() {
-	for (var i = 0; i < 9; i += 3) {
-		for (var j = 0; j < 9; j += 3) {
-			for (var k = i; k < i + 3; k++) {
-				for (var l = j; l < j + 3; l++) {
+	for (var i = 0; i < SIZE_OF_BOARD; i += SIZE_OF_SQUARE) {
+		for (var j = 0; j < SIZE_OF_BOARD; j += SIZE_OF_SQUARE) {
+			for (var k = i; k < i + SIZE_OF_SQUARE; k++) {
+				for (var l = j; l < j + SIZE_OF_SQUARE; l++) {
 					var arr;
 
 					if (possibilities[k][l].length == 2) {
 						arr = possibilities[k][l];
 
-						for (var m = k; m < i + 3; m++) {
-							for (var n = l; n < j + 3; n++) {
+						for (var m = k; m < i + SIZE_OF_SQUARE; m++) {
+							for (var n = l; n < j + SIZE_OF_SQUARE; n++) {
 								if ((m != k || n != l) && arr.equals(possibilities[m][n])) {
 									var val1 = arr[0], val2 = arr[1];
 
@@ -416,8 +416,8 @@ function removeOtherOccasions(val1, val2, i1, j1, i2, j2, i3, j3, val3) {
 	if (i3 === undefined || j3 === undefined || val3 === undefined)
 		i3 = j3 = val3 = -1;
 
-	for (var i = iSquare; i < iSquare + 3; i++) {
-		for (var j = jSquare; j < jSquare + 3; j++) {
+	for (var i = iSquare; i < iSquare + SIZE_OF_SQUARE; i++) {
+		for (var j = jSquare; j < jSquare + SIZE_OF_SQUARE; j++) {
 			if ((i != i1 || j != j1) && (i != i2 || j != j2) && (i != i3 || j != j3)) {
 				var index1 = possibilities[i][j].indexOf(val1);
 				if (~index1)
