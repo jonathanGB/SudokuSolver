@@ -10,7 +10,7 @@ Array.prototype.equals = function (array) {
     if (!array)
         return false;
 
-    // compare lengths - can save a lot of time 
+    // compare lengths - can save a lot of time
     if (this.length != array.length)
         return false;
 
@@ -19,13 +19,13 @@ Array.prototype.equals = function (array) {
         if (this[i] instanceof Array && array[i] instanceof Array) {
             // recurse into the nested arrays
             if (!this[i].equals(array[i]))
-                return false;       
-        }           
-        else if (this[i] != array[i]) { 
+                return false;
+        }
+        else if (this[i] != array[i]) {
             // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;   
-        }           
-    }       
+            return false;
+        }
+    }
     return true;
 }
 // Hide method from for-in loops
@@ -223,6 +223,7 @@ function findHiddenPossibilities() {
 								possibilities[k][l] = [];
 								count++;
 								loop = 0;
+                flag = true;
 								break;
 							}
 
@@ -236,7 +237,7 @@ function findHiddenPossibilities() {
 									if (firstColumn != l)
 										oneColumn = false;
 
-									if (!firstRow && !firstColumn) {
+									if (!oneLine && !oneColumn) {
 										flag = true;
 										break;
 									}
@@ -250,7 +251,7 @@ function findHiddenPossibilities() {
 
 					if (!flag) {
 						if (possibleCells == 1) {
-							console.log("possible 1");
+							console.log("possible 1", firstRow, firstColumn);
 							board[firstRow][firstColumn] = val;
 							possibilities[firstRow][firstColumn] = [];
 							updatePossibilities(firstRow, firstColumn, val, true, true, true);
@@ -259,8 +260,8 @@ function findHiddenPossibilities() {
 						}
 
 						if (possibleCells > 1) {
-							console.log("possible > 1");
-							oneLine ? 
+							console.log("possible > 1", firstRow, firstColumn);
+							oneLine ?
 								updatePossibilities(firstRow, firstColumn, val, true, false, false) :
 								updatePossibilities(firstRow, firstColumn, val, false, true, false);
 						}
@@ -270,7 +271,7 @@ function findHiddenPossibilities() {
 		}
 	} while (++loop < 2);
 
-	console.log("Finished second wave");
+	console.log("end hidden possibilities");
 
 	return count;
 }
@@ -346,7 +347,7 @@ function onlyInRow() {
 				for (var j = 0; j < SIZE_OF_BOARD; j++) {
 					if (!board[i][j] && ~possibilities[i][j].indexOf(val)) {
 						if (index == -1)
-							index = j;	
+							index = j;
 						else if (columnOfSquare(j) != columnOfSquare(index))
 							break;
 
@@ -394,7 +395,7 @@ function onlyInColumn() {
 							break;
 
 						ctr++;
-					} 
+					}
 
 					if (board[j][i] == val)
 						break;

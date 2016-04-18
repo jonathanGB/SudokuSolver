@@ -11,7 +11,7 @@ function changeButtonState(state) {
 		$('button#solve').addClass('pure-button-disabled'); // disable the "Solve" button
 	} else if (state == "enable") {
 		$('#solveEmptyButtons button').removeClass('pure-button-disabled'); // enable solve/empty buttons
-	} else { 
+	} else {
 		var flag = true;
 
 		// enable the "Solve" button if the grid is not completely empty
@@ -36,7 +36,7 @@ function preFillBoard() {
 		$(this).find('td input').each(function(j) {
 			var value = parseInt($(this).val()); // grab value
 
-			if (isNaN(value)) 
+			if (isNaN(value))
 				value = 0; // empty cells will be stored as 0 in the array, as 0 is easy to work with as an empty value
 			else
 				$('table#solution tbody tr:eq('+i+') td:eq('+j+')').addClass('pre-chosen-numbers'); // special class inside the solution table for inputted values (so they stand out)
@@ -57,7 +57,8 @@ function loadingPopover(fade) {
 function populateSolutionTable() {
 	$('table#solution tbody tr').each(function(i) {
 		$(this).find('td').each(function(j) {
-			$(this).text(board[i][j]);
+			if (board[i][j] != 0)
+				$(this).text(board[i][j]);
 		});
 	});
 }
@@ -65,37 +66,39 @@ function populateSolutionTable() {
 // main program
 function solveSudoku() {
 	var beg = new Date().getTime(), end; // begin and end variables used to know how long the solving algorithm took (in ms)
-	preFillBoard(); 
+	preFillBoard();
 
 	$('#solutionContainer').fadeOut(); // hide the solution table
 
 	if (validateAllCells(board)) { // if the board inputted is valid
 		$('div.alert').fadeOut(); // hide error message (if already visible)
-		loadingPopover("fadein"); 
+		loadingPopover("fadein");
 
 		fillPossibilities(board); // fill Possibilities array + first wave of solving
 
 		if (!solutionFound(board)) { // if no solution yet, go to second wave
 			console.log("second wave");
-			
+
 			// loop through second wave's algorithms as long as at least one new value is found
-			do { 
+			do {
 				var count = 0; // holds the "new value" count
 
 				findTwoDuetsInSquare();
-				//count += findHiddenPossibilities();
+				count += findHiddenPossibilities();
 				count += onlyInRow();
 				count += onlyInColumn();
 			} while (count > 0);
 
+			console.log("end second wave");
+
 			if (!solutionFound(board)) {// if no solution yet, go to third wave (genetic algorithm)
 				console.log("third wave");
 				console.log("genetic algorithm here");
-			} 
+			}
 		}
 
 		// end of process here
-		
+
 		end = new Date().getTime();
 		console.log("SOLUTION FOUND in " + (end - beg) + "ms!"); // show how long it took
 
@@ -112,14 +115,14 @@ function solveSudoku() {
 }
 
 // fill the input table by pasting the clipboard
-// returns a boolean representing if the paste was successful 
+// returns a boolean representing if the paste was successful
 function manipulateCopiedMatrix(text) {
 	var arr = text.split(/\s+/); // build array with clipboard content, separated by whitespace
 	var flag = false; // returned boolean
 
 	// clipboard but be the same length as the sudoku table (81)
 	if (arr.length == SIZE_OF_BOARD * SIZE_OF_BOARD) {
-		arr.forEach(function(val, i) { 
+		arr.forEach(function(val, i) {
 			if (val >= 1 && val <= 9) { // value must be between 1 and 9 inclusively
 				var row = parseInt(i / SIZE_OF_BOARD), col = i % SIZE_OF_BOARD; // translate 1d position to 2d position
 
@@ -130,13 +133,13 @@ function manipulateCopiedMatrix(text) {
 		flag = true; // valid paste
 	}
 
-	return flag; 
+	return flag;
 }
 
 // init function on DOM ready
 function init() {
 	// empty Board and Possibilities arrays
-	board = [], possibilities = []; 
+	board = [], possibilities = [];
 
 	// intialize board Matrix
 	for (var i = 0; i < SIZE_OF_BOARD; i++) {
@@ -175,9 +178,9 @@ function init() {
 		}
 	});
 
-	$('tbody input').on('keyup mousedown', changeButtonState); 
+	$('tbody input').on('keyup mousedown', changeButtonState);
 
-	$('button#solve').click(function() { 
+	$('button#solve').click(function() {
 		if (!$(this).hasClass('pure-button-disabled')) // solve sudoku only if the "solve" button is enabled
 			solveSudoku();
 	});
@@ -187,7 +190,7 @@ function init() {
 			$('table#base tbody td input').val(''); // empty all inputs
 			$('table#solution tbody td').removeClass('pre-chosen-numbers');
 			$('#solutionContainer').slideUp(); // hide solution table
-			changeButtonState(); 
+			changeButtonState();
 		}
 	});
 }
