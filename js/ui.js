@@ -65,7 +65,7 @@ function populateSolutionTable() {
 
 // main program
 function solveSudoku() {
-	var beg = new Date().getTime(), end; // begin and end variables used to know how long the solving algorithm took (in ms)
+	var beg = new Date().getTime(); // begin variable used to know how long the solving algorithm took (in ms)
 	preFillBoard();
 
 	$('#solutionContainer').fadeOut(); // hide the solution table
@@ -93,25 +93,37 @@ function solveSudoku() {
 
 			if (!solutionFound(board)) {// if no solution yet, go to third wave (genetic algorithm)
 				console.log("third wave");
-				console.log("genetic algorithm here");
+				var missingPossibilities = getMissingPossibilities();
+				console.log(JSON.stringify(missingPossibilities));
+				$.post('/genetic', {
+					possibilities: JSON.stringify(missingPossibilities),
+					grid: JSON.stringify(board)
+				}, function(data) {
+					console.log(data);
+					console.log(typeof data);
+					//board = data; --> uncomment once the genetic algorithm actually works
+					showAnswer(beg, "third");
+				}, 'json');
+			} else { // directly here if 3rd wave not necessary
+				showAnswer(beg, "second");
 			}
+		} else {// directly here if 2nd wave not necessary
+				showAnswer(beg, "first");
 		}
-
-		// end of process here
-
-		end = new Date().getTime();
-		console.log("SOLUTION FOUND in " + (end - beg) + "ms!"); // show how long it took
-
-		loadingPopover("fadeout");
-		populateSolutionTable();
-		$('#solutionContainer').fadeIn(); // show solution table
-
 	} else { // invalid inputted table
 		console.log("invalid");
 		$('div.alert').fadeIn();
 		changeButtonState('disable');
 	}
+}
 
+function showAnswer(beginningTime, wave) {
+		var endTime = new Date().getTime();
+		console.log("SOLUTION FOUND in " + wave + " wave in " + (endTime - beginningTime) + "ms!"); // show how long it took
+
+		loadingPopover("fadeout");
+		populateSolutionTable();
+		$('#solutionContainer').fadeIn(); // show solution table
 }
 
 // fill the input table by pasting the clipboard

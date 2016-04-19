@@ -475,3 +475,16 @@ function removeOtherOccasions(val1, val2, i1, j1, i2, j2, i3, j3, val3) {
 		}
 	}
 }
+
+function getMissingPossibilities() {
+  var obj = {};
+
+  for (var i = 0; i < SIZE_OF_BOARD; i++) {
+    for (var j = 0; j < SIZE_OF_BOARD; j++) {
+      if (possibilities[i][j].length)
+        obj[(i * SIZE_OF_BOARD) + j] = possibilities[i][j];
+    }
+  }
+
+  return obj;
+}

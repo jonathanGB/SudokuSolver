@@ -6,8 +6,9 @@ import (
   "fmt"
   "os"
   "bufio"
-  "log"
   "encoding/json"
+  "strconv"
+  "geneticLib"
 )
 
 func main() {
@@ -33,17 +34,25 @@ func main() {
         postPossibilities := r.FormValue("possibilities")
         postGrid := r.FormValue("grid")
 
-        possibilities := make([][][]int, 0)
-        grid := make([][]int, 0)
-        if err := json.Unmarshal([]byte(postPossibilities), &possibilities); err != nil {
+        possibilitiesStr := make(map[string][]int8, 0)
+        grid := make([][]int8, 0)
+        if err := json.Unmarshal([]byte(postPossibilities), &possibilitiesStr); err != nil {
           panic(err)
         }
         if err := json.Unmarshal([]byte(postGrid), &grid); err != nil {
           panic(err)
         }
 
-        val := geneticAlgorithm(possibilities, grid)
-        fmt.Fprintf(w, "%v", val)
+        possibilitiesInt := make(map[int8][]int8, 0)
+        for key, val := range(possibilitiesStr) {
+          newKey64, _ := strconv.ParseInt(key, 10, 8)
+
+          possibilitiesInt[int8(newKey64)] = val
+        }
+
+        val := geneticLib.GeneticAlgorithm(possibilitiesInt, grid)
+        fmt.Printf("%v", string(val))
+        fmt.Fprintf(w, string(val))
       }
     })
 
@@ -66,8 +75,7 @@ func serveResource(w http.ResponseWriter, req *http.Request) {
     } else {
         contentType = "text/plain"
     }
-    log.Println(path)
-    log.Println(contentType)
+
     f, err := os.Open(path)
 
     if err == nil {
@@ -78,8 +86,4 @@ func serveResource(w http.ResponseWriter, req *http.Request) {
     } else {
         w.WriteHeader(404)
     }
-}
-
-func geneticAlgorithm (poss [][][]int, grid [][]int) []int {
-  return poss[0][2]
 }
