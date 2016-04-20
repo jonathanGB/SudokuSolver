@@ -24,6 +24,39 @@ func (individual *IndividualSolution) setFitness(val uint16) {
   individual.fitness = val
 }
 
+func (individual *IndividualSolution) mutate(poss map[int8][]int8) {
+  keys := make([]int8, 0)
+
+  for key, _ := range poss {
+      keys = append(keys, key)
+  }
+
+  rndInd := rand.Intn(len(keys))
+  i := keys[rndInd]
+  choices := poss[i]
+  choicesLength := len(choices)
+
+  newGene := choices[rand.Intn(choicesLength)]
+  for newGene == individual.solution[i] {
+    newGene = choices[rand.Intn(choicesLength)]
+  }
+
+  individual.addSolution(i, newGene)
+}
+
+func (individual1 *IndividualSolution) similarities(individual2 *IndividualSolution) float64 {
+  var similar float64 = 0
+  var total float64 = float64(len(individual1.solution))
+
+  for key, _ := range individual1.solution {
+    if individual1.solution[key] == individual2.solution[key] {
+      similar++
+    }
+  }
+
+  return similar / total
+}
+
 
 // implement Sort interface for the population
 type Population []*IndividualSolution
@@ -51,7 +84,7 @@ func (pop Population) removeRandomIndividual() {
 func (pop Population) chooseParents() (int, int) {
   rnd := rand.Float64()
   var currProb float64 = 0
-  const Pc = 0.15 // predefined probability
+  const Pc = 0.2 // predefined probability
   var i int
   popLength := len(pop)
 
@@ -64,45 +97,80 @@ func (pop Population) chooseParents() (int, int) {
     }
   }
 
-  var i2 int
-  for i2 = rand.Intn(popLength); i2 == i; {}
+  i2 := rand.Intn(popLength)
+  for i2 == i {
+    i2 = rand.Intn(popLength)
+  }
 
   return i, i2
 }
 
-func (pop Population) crossover(ind1, ind2 int, grid[][]int8) {
+func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss map[int8][]int8) *IndividualSolution {
   child := IndividualSolution{0, make(map[int8]int8, 0)}
-  sol1, sol2 := pop[ind1].solution, pop[ind2].solution
-  possLength := len(sol1)
+  sol1, sol2 := pop[ind1], pop[ind2]
+  possLength := len(sol1.solution)
   cross := rand.Intn(possLength)
 
-  for key, _ := range sol1 {
+  // force group diversity
+  if sol1.similarities(sol2) >= 0.9 {
+    fmt.Println("new")
+    sol2 = generateIndividual(poss, grid)
+    sol2.setFitness(computeFitness(sol2.solution, grid))
+  }
+
+  for key, _ := range sol1.solution {
     cross--
     if cross >= 0 {
-      child.addSolution(key, sol1[key])
+      child.addSolution(key, sol1.solution[key])
     } else {
-      child.addSolution(key, sol2[key])
+      child.addSolution(key, sol2.solution[key])
     }
   }
 
   child.setFitness(computeFitness(child.solution, grid))
+
+  return &child
 }
 
 func GeneticAlgorithm(poss map[int8][]int8, grid [][]int8) []byte {
-  const POPULATION_SIZE = 3
-  const MUTATION_RATE = 0.7
-  const MAX_GENERATIONS = 200
+  const POPULATION_SIZE = 100
+  const MUTATION_RATE = 0.6
+  const MAX_GENERATIONS = 100000
 
   population := generatePopulation(POPULATION_SIZE, poss, grid)
+  var solution map[int8]int8 = nil
 
   for i := 0; i < MAX_GENERATIONS; i++ {
     sort.Sort(population) // sort population in increasing order of fitness
+
+    if population[0].fitness == 1 {
+      solution = population[0].solution
+      break
+    }
+
     population.removeRandomIndividual()
     parent1, parent2 := population.chooseParents()
-    population.crossover(parent1, parent2, grid)
+    child := population.crossover(parent1, parent2, grid, poss)
+
+    if rand.Float64() < MUTATION_RATE {
+      child.mutate(poss)
+    }
+
+    population = append(population, child)
   }
 
-  jsonVal, _ := json.Marshal(population)
+  for i := 0; i < 10; i++ {
+    fmt.Printf("%d\n%v\n\n", population[i].fitness, population[i].solution)
+  }
+
+  var jsonVal []byte
+  if solution == nil {
+    jsonVal, _ = json.Marshal(population[0].fitness)
+  } else {
+    fmt.Println("wazzzzzzzzzzzzzzzzzza\n\n")
+    jsonVal, _ = json.Marshal(solution)
+  }
+
   return jsonVal
 }
 
@@ -112,7 +180,6 @@ func generatePopulation(size int, poss map[int8][]int8, grid [][]int8) Populatio
   for i := 0; i < size; i++ {
     ind := generateIndividual(poss, grid)
     pop = append(pop, ind)
-    fmt.Printf("%v\n\n", *ind)
   }
 
   return pop
