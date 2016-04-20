@@ -3,7 +3,9 @@ package geneticLib
 import (
   "encoding/json"
   "fmt"
+  "math"
   "math/rand"
+  "sort"
 )
 
 const BOARD_SIZE = 9
@@ -22,18 +24,90 @@ func (individual *IndividualSolution) setFitness(val uint16) {
   individual.fitness = val
 }
 
+
+// implement Sort interface for the population
+type Population []*IndividualSolution
+func (pop Population) Len() int {return len(pop)}
+func (pop Population) Swap(i, j int) {pop[i], pop[j] = pop[j], pop[i]}
+func (pop Population) Less(i, j int) bool {return pop[i].fitness < pop[j].fitness}
+
+func (pop Population) removeRandomIndividual() {
+  rnd := rand.Float64()
+  var currProb float64 = 0
+  const Pc = 0.1 // predefined probability
+  var i int
+
+  for i, j := len(pop) - 1, 0; i >= 0; i, j = i - 1, j + 1 {
+    currProb += math.Pow(1 - Pc, float64(j)) * Pc
+
+    if rnd < currProb {
+      break
+    }
+  }
+
+  pop = append(pop[:i], pop[i + 1:]...)
+}
+
+func (pop Population) chooseParents() (int, int) {
+  rnd := rand.Float64()
+  var currProb float64 = 0
+  const Pc = 0.15 // predefined probability
+  var i int
+  popLength := len(pop)
+
+  // first parent chosen following a weighted probability
+  for i, j := popLength - 1, 0; i >= 0; i, j = i - 1, j + 1 {
+    currProb += math.Pow(1 - Pc, float64(j)) * Pc
+
+    if rnd < currProb {
+      break
+    }
+  }
+
+  var i2 int
+  for i2 = rand.Intn(popLength); i2 == i; {}
+
+  return i, i2
+}
+
+func (pop Population) crossover(ind1, ind2 int, grid[][]int8) {
+  child := IndividualSolution{0, make(map[int8]int8, 0)}
+  sol1, sol2 := pop[ind1].solution, pop[ind2].solution
+  possLength := len(sol1)
+  cross := rand.Intn(possLength)
+
+  for key, _ := range sol1 {
+    cross--
+    if cross >= 0 {
+      child.addSolution(key, sol1[key])
+    } else {
+      child.addSolution(key, sol2[key])
+    }
+  }
+
+  child.setFitness(computeFitness(child.solution, grid))
+}
+
 func GeneticAlgorithm(poss map[int8][]int8, grid [][]int8) []byte {
   const POPULATION_SIZE = 3
   const MUTATION_RATE = 0.7
+  const MAX_GENERATIONS = 200
 
   population := generatePopulation(POPULATION_SIZE, poss, grid)
+
+  for i := 0; i < MAX_GENERATIONS; i++ {
+    sort.Sort(population) // sort population in increasing order of fitness
+    population.removeRandomIndividual()
+    parent1, parent2 := population.chooseParents()
+    population.crossover(parent1, parent2, grid)
+  }
 
   jsonVal, _ := json.Marshal(population)
   return jsonVal
 }
 
-func generatePopulation(size int, poss map[int8][]int8, grid [][]int8) []*IndividualSolution {
-  pop := make([]*IndividualSolution, 0)
+func generatePopulation(size int, poss map[int8][]int8, grid [][]int8) Population {
+  pop := make(Population, 0)
 
   for i := 0; i < size; i++ {
     ind := generateIndividual(poss, grid)
