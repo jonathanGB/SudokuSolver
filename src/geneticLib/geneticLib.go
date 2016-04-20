@@ -6,6 +6,7 @@ import (
   "math"
   "math/rand"
   "sort"
+  "time"
 )
 
 const BOARD_SIZE = 9
@@ -136,6 +137,8 @@ func GeneticAlgorithm(poss map[int8][]int8, grid [][]int8) []byte {
   const POPULATION_SIZE = 100
   const MUTATION_RATE = 0.6
   const MAX_GENERATIONS = 100000
+
+  rand.Seed(time.Now().UnixNano())
 
   population := generatePopulation(POPULATION_SIZE, poss, grid)
   var solution map[int8]int8 = nil
