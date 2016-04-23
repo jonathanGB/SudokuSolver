@@ -26,14 +26,14 @@ func (individual *IndividualSolution) setFitness(val uint16) {
 }
 
 func (individual *IndividualSolution) mutate(poss map[int8][]int8) {
-  keys := make([]int8, 0)
+  var i int8
 
+  // grab first one, go makes iteration random
   for key, _ := range poss {
-      keys = append(keys, key)
+      i = key
+      break
   }
 
-  rndInd := rand.Intn(len(keys))
-  i := keys[rndInd]
   choices := poss[i]
   choicesLength := len(choices)
 
