@@ -9,9 +9,12 @@ import (
   "time"
 )
 
+/* CHANGE GRID TO ARRAY RATHER THAN SLICE */
+
 const BOARD_SIZE = 9
 const SQUARE_SIZE = 3
 
+type Possibilities map[int8][]int8
 type IndividualSolution struct {
   fitness uint16
   solution map[int8]int8
@@ -25,7 +28,7 @@ func (individual *IndividualSolution) setFitness(val uint16) {
   individual.fitness = val
 }
 
-func (individual *IndividualSolution) mutate(poss map[int8][]int8) {
+func (individual *IndividualSolution) mutate(poss Possibilities) {
   var i int8
 
   // grab first one, go makes iteration random
@@ -106,7 +109,7 @@ func (pop Population) chooseParents() (int, int) {
   return i, i2
 }
 
-func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss map[int8][]int8) *IndividualSolution {
+func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities) *IndividualSolution {
   child := IndividualSolution{0, make(map[int8]int8, 0)}
   sol1, sol2 := pop[ind1], pop[ind2]
   possLength := len(sol1.solution)
@@ -133,7 +136,7 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss map[int8][]in
   return &child
 }
 
-func GeneticAlgorithm(poss map[int8][]int8, grid [][]int8) []byte {
+func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
   const POPULATION_SIZE = 100
   const MUTATION_RATE = 0.6
   const MAX_GENERATIONS = 100000
@@ -177,7 +180,7 @@ func GeneticAlgorithm(poss map[int8][]int8, grid [][]int8) []byte {
   return jsonVal
 }
 
-func generatePopulation(size int, poss map[int8][]int8, grid [][]int8) Population {
+func generatePopulation(size int, poss Possibilities, grid [][]int8) Population {
   pop := make(Population, 0)
 
   for i := 0; i < size; i++ {
@@ -188,7 +191,7 @@ func generatePopulation(size int, poss map[int8][]int8, grid [][]int8) Populatio
   return pop
 }
 
-func generateIndividual(poss map[int8][]int8, grid [][]int8) *IndividualSolution {
+func generateIndividual(poss Possibilities, grid [][]int8) *IndividualSolution {
   individual := IndividualSolution{0, make(map[int8]int8, 0)}
 
   for key, val := range poss {

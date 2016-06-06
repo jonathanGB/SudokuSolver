@@ -35,7 +35,7 @@ func main() {
         postGrid := r.FormValue("grid")
 
         possibilitiesStr := make(map[string][]int8, 0)
-        grid := make([][]int8, 0)
+        grid := make([9][9]int8, 0)
         if err := json.Unmarshal([]byte(postPossibilities), &possibilitiesStr); err != nil {
           panic(err)
         }
@@ -43,6 +43,7 @@ func main() {
           panic(err)
         }
 
+        // convert keys of possibilitiesStr to int8
         possibilitiesInt := make(map[int8][]int8, 0)
         for key, val := range(possibilitiesStr) {
           newKey64, _ := strconv.ParseInt(key, 10, 8)
