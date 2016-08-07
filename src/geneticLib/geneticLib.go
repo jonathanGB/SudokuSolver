@@ -70,11 +70,11 @@ func (pop Population) Less(i, j int) bool {return pop[i].fitness < pop[j].fitnes
 
 func (pop Population) removeRandomIndividual() {
   rnd := rand.Float64()
-  var currProb float64 = 0
-  const Pc = 0.1 // predefined probability
-  var i int
+  var currProb float64
+  const Pc = 0.3 // predefined probability
+  var i, j int
 
-  for i, j := len(pop) - 1, 0; i >= 0; i, j = i - 1, j + 1 {
+  for i, j = 0, 0; i < len(pop) - 1; i, j = i + 1, j + 1 {
     currProb += math.Pow(1 - Pc, float64(j)) * Pc
 
     if rnd < currProb {
@@ -117,7 +117,7 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
 
   // force group diversity
   if sol1.similarities(sol2) >= 0.9 {
-    fmt.Println("new")
+    //fmt.Println("new")
     sol2 = generateIndividual(poss, grid)
     sol2.setFitness(computeFitness(sol2.solution, grid))
   }
@@ -137,9 +137,9 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
 }
 
 func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
-  const POPULATION_SIZE = 100
+  const POPULATION_SIZE = 50
   const MUTATION_RATE = 0.6
-  const MAX_GENERATIONS = 100000
+  const MAX_GENERATIONS = 10000
 
   rand.Seed(time.Now().UnixNano())
 
@@ -162,7 +162,7 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
       child.mutate(poss)
     }
 
-    population = append(population, child)
+    population = append(population, child) // TODO: place child to right position, rather than sort every iteration
   }
 
   for i := 0; i < 10; i++ {
