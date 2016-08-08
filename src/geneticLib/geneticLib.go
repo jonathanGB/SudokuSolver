@@ -32,7 +32,7 @@ func (individual *IndividualSolution) mutate(poss Possibilities) {
   var i int8
 
   // grab first one, go makes iteration random
-  for key, _ := range poss {
+  for key, _ := range poss { // TODO: bad idea, need to generate random number and stop at this random index
       i = key
       break
   }
@@ -47,7 +47,7 @@ func (individual *IndividualSolution) mutate(poss Possibilities) {
 
   individual.addSolution(i, newGene)
 }
-
+// remove this (eventually) ?
 func (individual1 *IndividualSolution) similarities(individual2 *IndividualSolution) float64 {
   var similar float64 = 0
   var total float64 = float64(len(individual1.solution))
@@ -89,11 +89,11 @@ func (pop Population) chooseParents() (int, int) {
   rnd := rand.Float64()
   var currProb float64 = 0
   const Pc = 0.2 // predefined probability
-  var i int
+  var i, j int
   popLength := len(pop)
 
   // first parent chosen following a weighted probability
-  for i, j := popLength - 1, 0; i >= 0; i, j = i - 1, j + 1 {
+  for i, j = popLength - 1, 0; i >= 0; i, j = i - 1, j + 1 {
     currProb += math.Pow(1 - Pc, float64(j)) * Pc
 
     if rnd < currProb {
