@@ -6,7 +6,6 @@ import (
   "math"
   "math/rand"
   "sort"
-  "time"
 )
 
 /* CHANGE GRID TO ARRAY RATHER THAN SLICE */
@@ -137,11 +136,9 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
 }
 
 func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
-  const POPULATION_SIZE = 50
-  const MUTATION_RATE = 0.6
-  const MAX_GENERATIONS = 10000
-
-  rand.Seed(time.Now().UnixNano())
+  const POPULATION_SIZE = 300
+  const MUTATION_RATE = 0.1
+  const MAX_GENERATIONS = 500000
 
   population := generatePopulation(POPULATION_SIZE, poss, grid)
   var solution map[int8]int8 = nil
@@ -149,12 +146,20 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
   for i := 0; i < MAX_GENERATIONS; i++ {
     sort.Sort(population) // sort population in increasing order of fitness
 
+    if (i == 0) {
+      for i := 0; i < 50; i++ {
+        fmt.Printf("%d\n%v\n\n", population[i].fitness, population[i].solution)
+      }
+
+      fmt.Println("\n\n\n")
+    }
+
     if population[0].fitness == 1 {
       solution = population[0].solution
       break
     }
 
-    population.removeRandomIndividual()
+    population = population[:len(population) - 1] // population.removeRandomIndividual()
     parent1, parent2 := population.chooseParents()
     child := population.crossover(parent1, parent2, grid, poss)
 
@@ -165,8 +170,8 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
     population = append(population, child) // TODO: place child to right position, rather than sort every iteration
   }
 
-  for i := 0; i < 10; i++ {
-    fmt.Printf("%d\n%v\n\n", population[i].fitness, population[i].solution)
+  for i := 0; i < 50; i++ {
+    fmt.Printf("%d...%d\n%v\n\n", population[i].fitness, i, population[i].solution)
   }
 
   var jsonVal []byte

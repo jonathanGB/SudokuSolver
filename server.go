@@ -9,9 +9,13 @@ import (
   "encoding/json"
   "strconv"
   "geneticLib"
+  "math/rand"
+  "time"
 )
 
 func main() {
+  rand.Seed(time.Now().UnixNano())
+
   http.HandleFunc("/",
     func(w http.ResponseWriter, req *http.Request) {
       requestedFile := "index.html"
