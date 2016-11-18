@@ -231,8 +231,11 @@ func computeFitness(solution map[int8]int8, grid [][]int8) uint16 {
   return count
 }
 
+// loops through the rest of the row to see if the value "val" is present
+// used to increment the fitness count of the current solution
+// if that is the case, returns 1; otherwise, returns 0
 func inRow(board *[9][9]int8, i, j, val int8) uint16 {
-  for ; j < BOARD_SIZE - 1; j++ {
+  for ; j < BOARD_SIZE; j++ {
       if board[i][j] == val {
         return 1
       }
@@ -241,8 +244,11 @@ func inRow(board *[9][9]int8, i, j, val int8) uint16 {
   return 0
 }
 
+// loops through the rest of the column to see if the value "val" is present
+// used to increment the fitness count of the current solution
+// if that is the case, returns 1; otherwise, returns 0
 func inCol(board *[9][9]int8, i, j, val int8) uint16 {
-  for ; i < BOARD_SIZE - 1; i++ {
+  for ; i < BOARD_SIZE; i++ {
     if board[i][j] == val {
       return 1
     }
@@ -251,22 +257,18 @@ func inCol(board *[9][9]int8, i, j, val int8) uint16 {
   return 0
 }
 
+// loops through the rest of the square containing (i, j) to see if the value "val" is present
+// used to increment the fitness count of the current solution
+// if that is the case, returns 1; otherwise, returns 0
 func inSqu(board *[9][9]int8, i, j, val int8) uint16 {
   var rowSquare int8 = i / SQUARE_SIZE * SQUARE_SIZE
   var colSquare int8 = j / SQUARE_SIZE * SQUARE_SIZE
-  var iSqu, jSqu int8
 
-  for iSqu = rowSquare; iSqu < rowSquare + SQUARE_SIZE; iSqu++ {
-    if iSqu < i {
-      continue
-    }
+  j++ // increment 1st time so we don't start the check with the same cell
 
-    for jSqu = colSquare; jSqu < colSquare + SQUARE_SIZE; jSqu++ {
-      if iSqu == i && jSqu < j {
-        continue
-      }
-
-      if board[iSqu][jSqu] == val {
+  for ; i < rowSquare + SQUARE_SIZE; i++ {
+    for ; j < colSquare + SQUARE_SIZE; j++ {
+      if board[i][j] == val {
         return 1
       }
     }
