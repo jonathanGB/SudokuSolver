@@ -15,7 +15,7 @@ const SQUARE_SIZE = 3
 
 type Possibilities map[int8][]int8
 type IndividualSolution struct {
-  fitness uint16
+  fitness int8
   solution map[int8]int8
 }
 
@@ -23,7 +23,7 @@ func (individual *IndividualSolution) addSolution(key int8, val int8) {
   individual.solution[key] = val
 }
 
-func (individual *IndividualSolution) setFitness(val uint16) {
+func (individual *IndividualSolution) setFitness(val int8) {
   individual.fitness = val
 }
 
@@ -114,12 +114,13 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
   possLength := len(sol1.solution)
   cross := rand.Intn(possLength)
 
+  // TODO: remove similarities?
   // force group diversity
-  if sol1.similarities(sol2) >= 0.9 {
+  //if sol1.similarities(sol2) >= 0.9 {
     //fmt.Println("new")
-    sol2 = generateIndividual(poss, grid)
-    sol2.setFitness(computeFitness(sol2.solution, grid))
-  }
+    //sol2 = generateIndividual(poss, grid)
+    //sol2.setFitness(computeFitness(sol2.solution, grid))
+  //}
 
   for key, _ := range sol1.solution {
     cross--
@@ -182,10 +183,14 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
     jsonVal, _ = json.Marshal(solution)
   }
 
+  fmt.Println(*storedBoard)
+
   return jsonVal
 }
 
 func generatePopulation(size int, poss Possibilities, grid [][]int8) Population {
+  fmt.Println(grid)
+
   pop := make(Population, 0)
 
   for i := 0; i < size; i++ {
@@ -209,10 +214,11 @@ func generateIndividual(poss Possibilities, grid [][]int8) *IndividualSolution {
   return &individual
 }
 
-func computeFitness(solution map[int8]int8, grid [][]int8) uint16 {
+var storedBoard *[9][9]int8
+func computeFitness(solution map[int8]int8, grid [][]int8) int8 {
   var newBoard [9][9]int8
   var i, j int8
-  var count uint16 = 1
+  var count int8 = 1
 
   // populate new board as a merge of the known board + random solution
   for i = 0; i < BOARD_SIZE; i++ {
@@ -225,12 +231,12 @@ func computeFitness(solution map[int8]int8, grid [][]int8) uint16 {
     }
   }
 
+  storedBoard = &newBoard;
+
   for i = 0; i < BOARD_SIZE; i++ {
-    for j = 0; j < BOARD_SIZE; j++ {
-      count += inRow(&newBoard, i, j + 1, newBoard[i][j])
-      count += inCol(&newBoard, i + 1, j, newBoard[i][j])
-      count += inSqu(&newBoard, i, j, newBoard[i][j])
-    }
+    count += inRow(&newBoard, i)
+    count += inCol(&newBoard, i)
+    count += inSqu(&newBoard, i * SQUARE_SIZE)
   }
 
   return count
@@ -239,45 +245,63 @@ func computeFitness(solution map[int8]int8, grid [][]int8) uint16 {
 // loops through the rest of the row to see if the value "val" is present
 // used to increment the fitness count of the current solution
 // if that is the case, returns 1; otherwise, returns 0
-func inRow(board *[9][9]int8, i, j, val int8) uint16 {
-  for ; j < BOARD_SIZE; j++ {
-      if board[i][j] == val {
-        return 1
-      }
+func inRow(board *[9][9]int8, i int8) (count int8) {
+  var hash [9]bool // used as a bucket structure
+  var j int8
+
+  for j, count = 0, 0; j < BOARD_SIZE; j++ {
+    curr := board[i][j]
+
+    if (hash[curr - 1]) {
+      count++
+    } else {
+      hash[curr - 1] = true
+    }
   }
 
-  return 0
+  return
 }
 
 // loops through the rest of the column to see if the value "val" is present
 // used to increment the fitness count of the current solution
 // if that is the case, returns 1; otherwise, returns 0
-func inCol(board *[9][9]int8, i, j, val int8) uint16 {
-  for ; i < BOARD_SIZE; i++ {
-    if board[i][j] == val {
-      return 1
+func inCol(board *[9][9]int8, j int8) (count int8) {
+  var hash [9]bool // used as a bucket structure
+  var i int8
+
+  for i, count = 0, 0; i < BOARD_SIZE; i++ {
+    curr := board[i][j]
+
+    if (hash[curr - 1]) {
+      count++
+    } else {
+      hash[curr - 1] = true
     }
   }
 
-  return 0
+  return
 }
 
 // loops through the rest of the square containing (i, j) to see if the value "val" is present
 // used to increment the fitness count of the current solution
 // if that is the case, returns 1; otherwise, returns 0
-func inSqu(board *[9][9]int8, i, j, val int8) uint16 {
-  var rowSquare int8 = i / SQUARE_SIZE * SQUARE_SIZE
-  var colSquare int8 = j / SQUARE_SIZE * SQUARE_SIZE
+func inSqu(board *[9][9]int8, index int8) (count int8) {
+  var hash [9]bool // used as a bucket structure
+  var rowSquare int8 = index / BOARD_SIZE * SQUARE_SIZE
+  var colSquare int8 = index % BOARD_SIZE
+  count = 0
 
-  j++ // increment 1st time so we don't start the check with the same cell
+  for i := rowSquare; i < rowSquare + SQUARE_SIZE; i++ {
+    for j := colSquare; j < colSquare + SQUARE_SIZE; j++ {
+      curr := board[i][j]
 
-  for ; i < rowSquare + SQUARE_SIZE; i++ {
-    for ; j < colSquare + SQUARE_SIZE; j++ {
-      if board[i][j] == val {
-        return 1
+      if (hash[curr - 1]) {
+        count++
+      } else {
+        hash[curr - 1] = true
       }
     }
   }
 
-  return 0
+  return
 }
