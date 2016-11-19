@@ -87,13 +87,13 @@ func (pop Population) removeRandomIndividual() {
 func (pop Population) chooseParents() (int, int) {
   rnd := rand.Float64()
   var currProb float64 = 0
-  const Pc = 0.2 // predefined probability
+  const Pc = 0.1 // predefined probability
   var i, j int
   popLength := len(pop)
 
   // first parent chosen following a weighted probability
   for i, j = popLength - 1, 0; i >= 0; i, j = i - 1, j + 1 {
-    currProb += math.Pow(1 - Pc, float64(j)) * Pc
+    currProb += math.Pow(1 - Pc, float64(j)) * Pc // 0.1 - 0.19
 
     if rnd < currProb {
       break
@@ -109,7 +109,7 @@ func (pop Population) chooseParents() (int, int) {
 }
 
 func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities) *IndividualSolution {
-  child := IndividualSolution{0, make(map[int8]int8, 0)}
+  child := IndividualSolution{1, make(map[int8]int8, 0)}
   sol1, sol2 := pop[ind1], pop[ind2]
   possLength := len(sol1.solution)
   cross := rand.Intn(possLength)
@@ -131,15 +131,13 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
     }
   }
 
-  child.setFitness(computeFitness(child.solution, grid))
-
   return &child
 }
 
 func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
-  const POPULATION_SIZE = 300
+  const POPULATION_SIZE = 5000
   const MUTATION_RATE = 0.1
-  const MAX_GENERATIONS = 500000
+  const MAX_GENERATIONS = 50000
 
   population := generatePopulation(POPULATION_SIZE, poss, grid)
   var solution map[int8]int8 = nil
@@ -160,7 +158,7 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
       break
     }
 
-    population = population[:len(population) - 1] // population.removeRandomIndividual()
+    //population = population[:len(population) - 1] // population.removeRandomIndividual()
     parent1, parent2 := population.chooseParents()
     child := population.crossover(parent1, parent2, grid, poss)
 
@@ -168,7 +166,22 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
       child.mutate(poss)
     }
 
-    population = append(population, child) // TODO: place child to right position, rather than sort every iteration
+    child.setFitness(computeFitness(child.solution, grid))
+
+    for i := 0; i < len(population); i++ {
+      if (child.fitness < population[i].fitness) {
+        for j:= len(population) - 1; j > i; j-- {
+          population[j] = population[j - 1]
+        }
+
+        population[i] = child
+
+        break
+      }
+    }
+
+
+   // population = append(population, child) // TODO: place child to right position, rather than sort every iteration
   }
 
   for i := 0; i < 50; i++ {
@@ -184,6 +197,7 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
   }
 
   fmt.Println(*storedBoard)
+  fmt.Println(grid)
 
   return jsonVal
 }
@@ -198,11 +212,13 @@ func generatePopulation(size int, poss Possibilities, grid [][]int8) Population 
     pop = append(pop, ind)
   }
 
+  sort.Sort(pop)
+
   return pop
 }
 
 func generateIndividual(poss Possibilities, grid [][]int8) *IndividualSolution {
-  individual := IndividualSolution{0, make(map[int8]int8, 0)}
+  individual := IndividualSolution{1, make(map[int8]int8, 0)}
 
   for key, val := range poss {
     randomInd := rand.Intn(len(val))
@@ -224,7 +240,7 @@ func computeFitness(solution map[int8]int8, grid [][]int8) int8 {
   for i = 0; i < BOARD_SIZE; i++ {
     for j = 0; j < BOARD_SIZE; j++ {
       if grid[i][j] == 0 {
-        newBoard[i][j] = solution[(i * BOARD_SIZE) + j]
+        newBoard[i][j] = solution[i * BOARD_SIZE + j]
       } else {
         newBoard[i][j] = grid[i][j]
       }
@@ -238,7 +254,6 @@ func computeFitness(solution map[int8]int8, grid [][]int8) int8 {
     count += inCol(&newBoard, i)
     count += inSqu(&newBoard, i * SQUARE_SIZE)
   }
-
   return count
 }
 
