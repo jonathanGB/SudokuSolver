@@ -1,7 +1,6 @@
 To do...
 Add comments / restructure code
 Fix empty board (really empty board)
-Add a genetic algorithm in last resort
 
 After all that...
 Do some changes on the UI/UX ?
