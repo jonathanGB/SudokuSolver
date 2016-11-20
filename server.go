@@ -11,6 +11,7 @@ import (
   "geneticLib"
   "math/rand"
   "time"
+  "runtime"
 )
 
 func main() {
@@ -55,9 +56,34 @@ func main() {
           possibilitiesInt[int8(newKey64)] = val
         }
 
-        val := geneticLib.GeneticAlgorithm(possibilitiesInt, grid)
-        fmt.Printf("%v", string(val))
-        fmt.Fprintf(w, string(val))
+        numCPU := runtime.NumCPU()
+        vals := make(chan []byte, numCPU)
+        stopGenetic := make(chan bool, 1)
+        for pops := 0; pops < numCPU; pops++ {
+          go geneticLib.GeneticAlgorithm(possibilitiesInt, grid, vals, stopGenetic)
+        }
+
+        var valCtr int
+        var done bool
+        for valCtr < numCPU {
+          select {
+          case val := <- vals:
+            if (val != nil) {
+              stopGenetic <- true
+              fmt.Fprintf(w, string(val))
+              done = true
+              break
+            } else if (valCtr == numCPU - 1) {
+              fmt.Fprintf(w, "0")
+            }
+
+            valCtr++
+          }
+
+          if (done) {
+            break
+          }
+        }
       }
     })
 

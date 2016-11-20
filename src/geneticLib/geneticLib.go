@@ -2,7 +2,6 @@ package geneticLib
 
 import (
   "encoding/json"
-  "fmt"
   "math"
   "math/rand"
   "sort"
@@ -163,7 +162,7 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
   return &child1, &child2
 }
 
-func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
+func GeneticAlgorithm(poss Possibilities, grid [][]int8, out chan<- []byte, stop <-chan bool) {
   const POPULATION_SIZE = 1000
   const MUTATION_RATE = 0.05
   const MAX_GENERATIONS = 1000000
@@ -172,14 +171,10 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
   var solution Solution
 
   for i := 0; i < MAX_GENERATIONS; i++ {
-    sort.Sort(population) // sort population in increasing order of fitness
-
-    if (i == 0) {
-      for i := 0; i < 50; i++ {
-        fmt.Printf("%d\n%v\n\n", population[i].fitness, population[i].solution)
-      }
-
-      fmt.Println("\n\n\n")
+    select {
+    case <- stop:
+      return
+    default:
     }
 
     if population[0].fitness == 1 {
@@ -224,24 +219,17 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
     }
   }
 
-  for i := 0; i < 50; i++ {
-    fmt.Printf("%d...%d\n%v\n\n", population[i].fitness, i, population[i].solution)
-  }
-
   var jsonVal []byte
   if solution == nil {
-    jsonVal, _ = json.Marshal(population[0].fitness)
+    jsonVal = nil
   } else {
-    fmt.Println("wazzzzzzzzzzzzzzzzzza\n\n")
     jsonVal, _ = json.Marshal(solution.preMarshal())
   }
 
-  return jsonVal
+  out <- jsonVal
 }
 
 func generatePopulation(size int, poss Possibilities, grid [][]int8) Population {
-  fmt.Println(grid)
-
   pop := make(Population, 0)
 
   for i := 0; i < size; i++ {
