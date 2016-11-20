@@ -142,8 +142,9 @@ func (pop Population) chooseParents() (int, int) {
   return i, i2
 }
 
-func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities) *IndividualSolution {
-  child := IndividualSolution{1, make(map[int8]int8, 0)}
+func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities) (*IndividualSolution, *IndividualSolution) {
+  child1 := IndividualSolution{1, make(map[int8]int8)}
+  child2 := IndividualSolution{1, make(map[int8]int8)}
   sol1, sol2 := pop[ind1], pop[ind2]
   possLength := len(sol1.solution)
   cross := rand.Intn(possLength)
@@ -151,13 +152,15 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
   for key, _ := range sol1.solution {
     cross--
     if cross >= 0 {
-      child.addSolution(key, sol1.solution[key])
+      child1.addSolution(key, sol1.solution[key])
+      child2.addSolution(key, sol2.solution[key])
     } else {
-      child.addSolution(key, sol2.solution[key])
+      child1.addSolution(key, sol2.solution[key])
+      child2.addSolution(key, sol1.solution[key])
     }
   }
 
-  return &child
+  return &child1, &child2
 }
 
 func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
@@ -186,21 +189,36 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
 
     //population = population[:len(population) - 1] // population.removeRandomIndividual()
     parent1, parent2 := population.chooseParents()
-    child := population.crossover(parent1, parent2, grid, poss)
+    child1, child2 := population.crossover(parent1, parent2, grid, poss)
 
     if rand.Float64() < MUTATION_RATE {
-      child.mutate(poss)
+      child1.mutate(poss)
     }
 
-    child.setFitness(computeFitness(child.solution, grid))
+    if rand.Float64() < MUTATION_RATE {
+      child2.mutate(poss)
+    }
 
+    child1.setFitness(computeFitness(child1.solution, grid))
+    child2.setFitness(computeFitness(child2.solution, grid))
+
+    // insert best children in population
     for i := 0; i < len(population); i++ {
-      if (child.fitness < population[i].fitness) {
+      if (child1.fitness < population[i].fitness) {
         for j:= len(population) - 1; j > i; j-- {
           population[j] = population[j - 1]
         }
 
-        population[i] = child
+        population[i] = child1
+        break
+      }
+
+      if (child2.fitness < population[i].fitness) {
+        for j:= len(population) - 1; j > i; j-- {
+          population[j] = population[j - 1]
+        }
+
+        population[i] = child2
         break
       }
     }
