@@ -6,6 +6,7 @@ import (
   "math"
   "math/rand"
   "sort"
+  "strconv"
 )
 
 /* CHANGE GRID TO ARRAY RATHER THAN SLICE */
@@ -14,9 +15,21 @@ const BOARD_SIZE = 9
 const SQUARE_SIZE = 3
 
 type Possibilities map[int8][]int8
+type Solution map[int8]int8
 type IndividualSolution struct {
   fitness int8
-  solution map[int8]int8
+  solution Solution
+}
+
+func (solution Solution) preMarshal() (pre map[string]int8) {
+  pre = make(map[string]int8)
+
+  for key, value := range solution {
+    keyStr := strconv.Itoa(int(key))
+    pre[keyStr] = value
+  }
+
+  return
 }
 
 func (individual *IndividualSolution) addSolution(key int8, val int8) {
@@ -46,7 +59,8 @@ func (individual *IndividualSolution) mutate(poss Possibilities) {
 
   individual.addSolution(i, newGene)
 }
-// remove this (eventually) ?
+
+// TODO: remove this (eventually) ? <--- currently unused
 func (individual1 *IndividualSolution) similarities(individual2 *IndividualSolution) float64 {
   var similar float64 = 0
   var total float64 = float64(len(individual1.solution))
@@ -67,6 +81,7 @@ func (pop Population) Len() int {return len(pop)}
 func (pop Population) Swap(i, j int) {pop[i], pop[j] = pop[j], pop[i]}
 func (pop Population) Less(i, j int) bool {return pop[i].fitness < pop[j].fitness}
 
+// TODO: remove this? <--- currently unused
 func (pop Population) removeRandomIndividual() {
   rnd := rand.Float64()
   var currProb float64
@@ -93,16 +108,33 @@ func (pop Population) chooseParents() (int, int) {
 
   // first parent chosen following a weighted probability
   for i, j = popLength - 1, 0; i >= 0; i, j = i - 1, j + 1 {
-    currProb += math.Pow(1 - Pc, float64(j)) * Pc // 0.1 - 0.19
+    currProb += math.Pow(1 - Pc, float64(j)) * Pc
 
     if rnd < currProb {
       break
     }
   }
 
-  i2 := rand.Intn(popLength)
-  for i2 == i {
-    i2 = rand.Intn(popLength)
+
+  // second parent chosen following a weighted probability
+  rnd = rand.Float64()
+  currProb = 0
+
+  var i2 int
+  for i2, j = popLength - 1, 0; i >= 0; i, j = i - 1, j + 1 {
+    currProb += math.Pow(1 - Pc, float64(j)) * Pc
+
+    if rnd < currProb {
+      break
+    }
+  }
+
+  if (i == i2) {
+    if (i == popLength - 1) {
+      i2--
+    } else {
+      i2++
+    }
   }
 
   return i, i2
@@ -113,14 +145,6 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
   sol1, sol2 := pop[ind1], pop[ind2]
   possLength := len(sol1.solution)
   cross := rand.Intn(possLength)
-
-  // TODO: remove similarities?
-  // force group diversity
-  //if sol1.similarities(sol2) >= 0.9 {
-    //fmt.Println("new")
-    //sol2 = generateIndividual(poss, grid)
-    //sol2.setFitness(computeFitness(sol2.solution, grid))
-  //}
 
   for key, _ := range sol1.solution {
     cross--
@@ -135,12 +159,12 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
 }
 
 func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
-  const POPULATION_SIZE = 5000
-  const MUTATION_RATE = 0.1
-  const MAX_GENERATIONS = 50000
+  const POPULATION_SIZE = 1000
+  const MUTATION_RATE = 0.05
+  const MAX_GENERATIONS = 1000000
 
   population := generatePopulation(POPULATION_SIZE, poss, grid)
-  var solution map[int8]int8 = nil
+  var solution Solution
 
   for i := 0; i < MAX_GENERATIONS; i++ {
     sort.Sort(population) // sort population in increasing order of fitness
@@ -175,13 +199,9 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
         }
 
         population[i] = child
-
         break
       }
     }
-
-
-   // population = append(population, child) // TODO: place child to right position, rather than sort every iteration
   }
 
   for i := 0; i < 50; i++ {
@@ -193,11 +213,10 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
     jsonVal, _ = json.Marshal(population[0].fitness)
   } else {
     fmt.Println("wazzzzzzzzzzzzzzzzzza\n\n")
-    jsonVal, _ = json.Marshal(solution)
+    jsonVal, _ = json.Marshal(solution.preMarshal())
   }
 
   fmt.Println(*storedBoard)
-  fmt.Println(grid)
 
   return jsonVal
 }
