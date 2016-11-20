@@ -7,12 +7,14 @@ import (
   "math/rand"
   "sort"
   "strconv"
+  "sync"
 )
 
 /* CHANGE GRID TO ARRAY RATHER THAN SLICE */
 
 const BOARD_SIZE = 9
 const SQUARE_SIZE = 3
+var mu sync.Mutex
 
 type Possibilities map[int8][]int8
 type Solution map[int8]int8
@@ -216,8 +218,6 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8) []byte {
     jsonVal, _ = json.Marshal(solution.preMarshal())
   }
 
-  fmt.Println(*storedBoard)
-
   return jsonVal
 }
 
@@ -249,7 +249,6 @@ func generateIndividual(poss Possibilities, grid [][]int8) *IndividualSolution {
   return &individual
 }
 
-var storedBoard *[9][9]int8
 func computeFitness(solution map[int8]int8, grid [][]int8) int8 {
   var newBoard [9][9]int8
   var i, j int8
@@ -266,13 +265,54 @@ func computeFitness(solution map[int8]int8, grid [][]int8) int8 {
     }
   }
 
-  storedBoard = &newBoard;
+  // here is the same fitness computation but concurrently using channels
+  // innerFitnesses := make(chan int8, BOARD_SIZE)
+  // for i = 0; i < BOARD_SIZE; i++ {
+  //   go func(index int8) {
+  //     var innerCount int8
+  //
+  //     innerCount += inRow(&newBoard, index)
+  //     innerCount += inCol(&newBoard, index)
+  //     innerCount += inSqu(&newBoard, index * SQUARE_SIZE)
+  //
+  //     innerFitnesses <- innerCount
+  //   }(i)
+  // }
+  //
+  // readCtr := 0
+  // for readCtr < BOARD_SIZE {
+  //   select {
+  //   case val := <- innerFitnesses:
+  //     count += val
+  //     readCtr++
+  //   }
+  // }
+
+  // here is the same fitness computation but concurrently using mutex
+  // var wg sync.WaitGroup
+  // wg.Add(BOARD_SIZE)
+  // for i = 0; i < BOARD_SIZE; i++ {
+  //   go func(index int8) {
+  //     defer wg.Done()
+  //     var innerCount int8
+  //
+  //     innerCount += inRow(&newBoard, index)
+  //     innerCount += inCol(&newBoard, index)
+  //     innerCount += inSqu(&newBoard, index * SQUARE_SIZE)
+  //
+  //     mu.Lock()
+  //       count += innerCount
+  //     mu.Unlock()
+  //   }(i)
+  // }
+  // wg.Wait()
 
   for i = 0; i < BOARD_SIZE; i++ {
-    count += inRow(&newBoard, i)
-    count += inCol(&newBoard, i)
-    count += inSqu(&newBoard, i * SQUARE_SIZE)
+      count += inRow(&newBoard, i)
+      count += inCol(&newBoard, i)
+      count += inSqu(&newBoard, i * SQUARE_SIZE)
   }
+
   return count
 }
 
