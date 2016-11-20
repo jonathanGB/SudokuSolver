@@ -46,6 +46,14 @@ function preFillBoard() {
 	});
 }
 
+// 3rd wave solution map to fill board
+function fillRestBoard(solution) {
+	Object.keys(solution).forEach(function(index) {
+		var i = parseInt(index / SIZE_OF_BOARD), j = index % SIZE_OF_BOARD;
+		board[i][j] = solution[index]
+	});
+}
+
 // fadeIn or fadeOut the loading popover
 function loadingPopover(fade) {
 	fade == "fadeout" ?
@@ -100,9 +108,17 @@ function solveSudoku() {
 					grid: JSON.stringify(board)
 				}, function(data) {
 					console.log(data);
-					console.log(typeof data);
+					var error;
+
+					if (typeof data === "object") { // we have an answer
+						fillRestBoard(data);
+						error = false;
+					} else { // no solution found
+						error = true;
+						$('div.alert-no-solution').fadeIn();
+					}
 					//board = data; --> uncomment once the genetic algorithm actually works
-					showAnswer(beg, "third");
+					showAnswer(beg, "third", error);
 				}, 'json');
 			} else { // directly here if 3rd wave not necessary
 				showAnswer(beg, "second");
@@ -112,18 +128,24 @@ function solveSudoku() {
 		}
 	} else { // invalid inputted table
 		console.log("invalid");
-		$('div.alert').fadeIn();
+		$('div.alert-error').fadeIn();
 		changeButtonState('disable');
 	}
 }
 
-function showAnswer(beginningTime, wave) {
+function showAnswer(beginningTime, wave, error) {
 		var endTime = new Date().getTime();
-		console.log("SOLUTION FOUND in " + wave + " wave in " + (endTime - beginningTime) + "ms!"); // show how long it took
+		var hasSolution = (error ? "NO SOLUTION FOUND" : "SOLUTION FOUND");
 
+		console.log(hasSolution + " in " + wave + " wave in " + (endTime - beginningTime) + "ms!"); // show how long it took
 		loadingPopover("fadeout");
-		populateSolutionTable();
-		$('#solutionContainer').fadeIn(); // show solution table
+
+		if (error) {
+			$('#solutionContainer').slideUp();
+		} else {
+			populateSolutionTable();
+			$('#solutionContainer').fadeIn();
+		}
 }
 
 // fill the input table by pasting the clipboard
