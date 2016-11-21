@@ -101,8 +101,15 @@ function solveSudoku() {
 
 			if (!solutionFound(board)) {// if no solution yet, go to third wave (genetic algorithm)
 				console.log("third wave");
+
 				var missingPossibilities = getMissingPossibilities();
 				console.log(JSON.stringify(missingPossibilities));
+
+				var amountPossibilities = Object.keys(missingPossibilities).reduce(function(acc, key) {
+					return missingPossibilities[key].length * acc
+				}, 1)
+				console.log(amountPossibilities)
+
 				$.post('/genetic', {
 					possibilities: JSON.stringify(missingPossibilities),
 					grid: JSON.stringify(board)
