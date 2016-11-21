@@ -4,7 +4,8 @@
 ### Status:
   -> ~~First wave of the solution generator complete~~<br>
   -> ~~Second wave of the solution generator complete~~<br>
-  -> ~~Working on the third wave (genetic algorithm) running on a go server~~
+  -> ~~Working on the third wave (genetic algorithm) running on a go server~~<br>
+  -> ~~Several populations are generated and modified in parallel (one for each CPU core)~~<br>
 
   Project complete for now! May be some fixes in the future, and possibly work on the "bonus" part
 
