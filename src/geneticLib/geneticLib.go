@@ -162,7 +162,7 @@ func (pop Population) crossover(ind1, ind2 int, grid[][]int8, poss Possibilities
   return &child1, &child2
 }
 
-func GeneticAlgorithm(poss Possibilities, grid [][]int8, out chan<- []byte, stop <-chan bool) {
+func GeneticAlgorithm(poss Possibilities, grid [][]int8, out chan<- []byte, stop chan bool) {
   const POPULATION_SIZE = 1000
   const MUTATION_RATE = 0.05
   const MAX_GENERATIONS = 1000000
@@ -173,6 +173,7 @@ func GeneticAlgorithm(poss Possibilities, grid [][]int8, out chan<- []byte, stop
   for i := 0; i < MAX_GENERATIONS; i++ {
     select {
     case <- stop:
+      stop <- true // propagate stop flag to other populations
       return
     default:
     }
