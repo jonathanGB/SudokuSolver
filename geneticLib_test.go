@@ -1,4 +1,4 @@
-package geneticLib
+package main
 
 import (
   "fmt"
